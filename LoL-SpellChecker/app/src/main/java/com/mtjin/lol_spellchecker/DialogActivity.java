@@ -63,7 +63,7 @@ public class DialogActivity extends AppCompatActivity {
                 Log.d("mainTAG", "탈진통과");
                 intent = new Intent();
                 intent.putExtra("name","gangta");
-                intent.putExtra("time", 15);
+                intent.putExtra("time", 40);
                 setResult(Activity.RESULT_OK , intent);
                 finish();
             }
