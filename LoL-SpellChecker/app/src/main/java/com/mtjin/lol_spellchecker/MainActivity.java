@@ -1,5 +1,6 @@
 package com.mtjin.lol_spellchecker;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -8,7 +9,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 
 import android.os.Vibrator;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,18 +21,24 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
+import com.maxwell.speechrecognition.OnSpeechRecognitionListener;
+import com.maxwell.speechrecognition.OnSpeechRecognitionPermissionListener;
+import com.maxwell.speechrecognition.SpeechRecognition;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnSpeechRecognitionListener, OnSpeechRecognitionPermissionListener {
     TextView spell11TextView;
     TextView spell12TextView;
     TextView spell21TextView;
@@ -41,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     Button startButton;
     Button searchButton;
     Switch aSwitch;
+    Switch bSwitch;
 
     Boolean isStart;
 
@@ -66,17 +78,18 @@ public class MainActivity extends AppCompatActivity {
     Spell42AsyncTask spell42AsyncTask;
     Spell51AsyncTask spell51AsyncTask;
     Spell52AsyncTask spell52AsyncTask;
+    VoiceAsyncTask voiceAsyncTask;
 
     //초기스펠이름
-    String name11 ;
-    String name12 ;
+    String name11;
+    String name12;
     String name21;
     String name22;
-    String name31 ;
-    String name32 ;
-    String name41  ;
-    String name42 ;
-    String name51 ;
+    String name31;
+    String name32;
+    String name41;
+    String name42;
+    String name51;
     String name52;
 
     //진동
@@ -90,7 +103,258 @@ public class MainActivity extends AppCompatActivity {
 
     final static String TAG = "MainTAG";
 
-    ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    //구글음성인식용(SST)
+    private Intent mIntent;
+    SpeechRecognizer mRecognizer;
+     SpeechRecognition speechRecognition;
+    //스레드개수
+    ExecutorService threadPool = Executors.newFixedThreadPool(12);
+
+    final int PERMISSION = 1;
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void OnSpeechRecognitionStarted() {
+        Log.d(TAG, "음성라이브러리 OnSpeechRecognitionStarted");
+    }
+
+    @Override
+    public void OnSpeechRecognitionStopped() {
+        Log.d(TAG, "음성라이브러리 OnSpeechRecognitionStopped");
+    }
+
+    @Override
+    public void OnSpeechRecognitionFinalResult(String s) {
+        Log.d(TAG, "OnSpeechRecognitionFinalResult:        " + s);
+        if (s.trim().equals("탑") || s.trim().equals("타압") || s.trim().equals("탓") || s.trim().equals("팝") || s.trim().equals("탁") || s.trim().equals("탐") || s.trim().equals("답")) {
+            if (isStart) {
+                if (spell11AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell11AsyncTask.cancel(true);
+                    spell11AsyncTask = new Spell11AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell11AsyncTask = new Spell11AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell11AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell11TextView.getText().toString().trim()));
+                    } else {
+                        spell11AsyncTask.execute(Integer.valueOf(spell11TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request11);
+            }
+        }
+        else if(s.trim().equals("탑스") || s.trim().equals("타압스") || s.trim().equals("탓스") || s.trim().equals("팝스") || s.trim().equals("탁스") || s.trim().equals("탐스") || s.trim().equals("답스")
+                || s.trim().equals("탑쓰") || s.trim().equals("타압쓰") || s.trim().equals("탓쓰") || s.trim().equals("팝쓰") || s.trim().equals("탁쓰") || s.trim().equals("탐쓰") || s.trim().equals("답쓰")
+                || s.trim().equals("닥쓰") || s.trim().equals("닥스")){
+            if (isStart) {
+                if (spell12AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell12AsyncTask.cancel(true);
+                    spell12AsyncTask = new Spell12AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell12AsyncTask = new Spell12AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell12AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell12TextView.getText().toString().trim()));
+                    } else {
+                        spell12AsyncTask.execute(Integer.valueOf(spell12TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request12);
+            }
+        }
+        else  if (s.trim().equals("정글") || s.trim().equals("전글") || s.trim().equals("정클") || s.trim().equals("점글") || s.trim().equals("정그")
+                || s.trim().equals("정걸") || s.trim().equals("전걸")) {
+            if (isStart) {
+                if (spell21AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell21AsyncTask.cancel(true);
+                    spell21AsyncTask = new Spell21AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell21AsyncTask = new Spell21AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell21AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell21TextView.getText().toString().trim()));
+                    } else {
+                        spell21AsyncTask.execute(Integer.valueOf(spell21TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request21);
+            }
+        }
+        else  if (s.trim().equals("정글스") || s.trim().equals("전글스") || s.trim().equals("정클스") || s.trim().equals("점글스") || s.trim().equals("정그스")
+                || s.trim().equals("정걸스") || s.trim().equals("전걸스")|| s.trim().equals("정글s") || s.trim().equals("정글 s")) {
+            if (isStart) {
+                if (spell22AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell22AsyncTask.cancel(true);
+                    spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell22AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell22TextView.getText().toString().trim()));
+                    } else {
+                        spell22AsyncTask.execute(Integer.valueOf(spell22TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request22);
+            }
+        }
+        else  if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
+                || s.trim().equals("비들") || s.trim().equals("미든")) {
+            if (isStart) {
+                if (spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell31AsyncTask.cancel(true);
+                    spell31AsyncTask = new Spell31AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell31AsyncTask = new Spell31AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell31AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell31TextView.getText().toString().trim()));
+                    } else {
+                        spell31AsyncTask.execute(Integer.valueOf(spell31TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request31);
+            }
+        }
+        else  if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
+                || s.trim().equals("미즈") || s.trim().equals("미스")|| s.trim().equals("미드쓰") || s.trim().equals("미들스")) {
+            if (isStart) {
+                if (spell32AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell32AsyncTask.cancel(true);
+                    spell32AsyncTask = new Spell32AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell32AsyncTask = new Spell32AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell32AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell32TextView.getText().toString().trim()));
+                    } else {
+                        spell32AsyncTask.execute(Integer.valueOf(spell32TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request32);
+            }
+        }
+        else  if (s.trim().equals("ad") || s.trim().equals("ag") || s.trim().equals("에이디") || s.trim().equals("에디") || s.trim().equals("애이디")
+                || s.trim().equals("az") || s.trim().equals("에이드")) {
+            if (isStart) {
+                if (spell41AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell41AsyncTask.cancel(true);
+                    spell41AsyncTask = new Spell41AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell41AsyncTask = new Spell41AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell41AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell41TextView.getText().toString().trim()));
+                    } else {
+                        spell41AsyncTask.execute(Integer.valueOf(spell41TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request41);
+            }
+        }
+        else  if (s.trim().equals("ads") || s.trim().equals("에이디스") || s.trim().equals("에디슨") || s.trim().equals("레이디스")|| s.trim().equals("앨리스")
+                || s.trim().equals("azs") || s.trim().equals("에이드스")) {
+            if (isStart) {
+                if (spell42AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell42AsyncTask.cancel(true);
+                    spell42AsyncTask = new Spell42AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell42AsyncTask = new Spell42AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell42AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell42TextView.getText().toString().trim()));
+                    } else {
+                        spell42AsyncTask.execute(Integer.valueOf(spell42TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request42);
+            }
+        }
+        else  if (s.trim().equals("서포터") || s.trim().equals("섯포터") || s.trim().equals("서포털") || s.trim().equals("스퍼터")|| s.trim().equals("써포터")
+                || s.trim().equals("support") || s.trim().equals("supporter")|| s.trim().equals("서폿")||s.trim().equals("Super")||s.trim().equals("super")||s.trim().equals("수퍼")) {
+            if (isStart) {
+                if (spell51AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell51AsyncTask.cancel(true);
+                    spell51AsyncTask = new Spell51AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell51AsyncTask = new Spell51AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell51AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell51TextView.getText().toString().trim()));
+                    } else {
+                        spell51AsyncTask.execute(Integer.valueOf(spell51TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request51);
+            }
+        }
+        else  if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스")|| s.trim().equals("써포터스")
+                || s.trim().equals("supports") || s.trim().equals("supporters")|| s.trim().equals("서퍼스")|| s.trim().equals("서폿스")) {
+            if (isStart) {
+                if (spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                    spell52AsyncTask.cancel(true);
+                    spell52AsyncTask = new Spell52AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                } else {
+                    spell52AsyncTask = new Spell52AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        spell52AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell52TextView.getText().toString().trim()));
+                    } else {
+                        spell52AsyncTask.execute(Integer.valueOf(spell52TextView.getText().toString().trim()));
+                    }
+                }
+            } else {
+                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                startActivityForResult(intent, request52);
+            }
+        }
+    }
+
+    @Override
+    public void OnSpeechRecognitionCurrentResult(String s) {
+        Log.d(TAG, "음성라이브러리 OnSpeechRecognitionCurrentResult");
+
+    }
+
+    @Override
+    public void OnSpeechRecognitionError(int i, String s) {
+        Log.d(TAG, "음성라이브러리 OnSpeechRecognitionError");
+    }
+
+    @Override
+    public void onPermissionGranted() {
+
+    }
+
+    @Override
+    public void onPermissionDenied() {
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +366,20 @@ public class MainActivity extends AppCompatActivity {
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-8924705805317182/3164737399");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        //음성인식 퍼미션
+        if (Build.VERSION.SDK_INT >= 23) {
+            // 퍼미션 체크
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
+                    Manifest.permission.RECORD_AUDIO}, PERMISSION);
+        }
+
+        //음성인식
+        mIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        mIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+        mIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+          speechRecognition = new SpeechRecognition(this);
+        speechRecognition.setSpeechRecognitionPermissionListener(this);
+        speechRecognition.setSpeechRecognitionListener(this);
 
         isStart = false;
         spell11TextView = findViewById(R.id.spell11);
@@ -117,8 +395,21 @@ public class MainActivity extends AppCompatActivity {
         startButton = findViewById(R.id.startBtn);
         searchButton = findViewById(R.id.searchBtn);
         aSwitch = findViewById(R.id.switch1);
+        bSwitch = findViewById(R.id.switch2);
         //진동
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        //보이스스위치
+        bSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    Toast.makeText(getApplicationContext(), "Say Spell in 2.5 seconds(Speak to the ringtone timing)", Toast.LENGTH_LONG).show();
+                        voiceAsyncTask.cancel(true);
+                        voiceAsyncTask = new VoiceAsyncTask();
+                        voiceAsyncTask.executeOnExecutor(threadPool);
+                }
+            }
+        });
 
 
         spell11AsyncTask = new Spell11AsyncTask();
@@ -131,18 +422,19 @@ public class MainActivity extends AppCompatActivity {
         spell42AsyncTask = new Spell42AsyncTask();
         spell51AsyncTask = new Spell51AsyncTask();
         spell52AsyncTask = new Spell52AsyncTask();
+        voiceAsyncTask = new VoiceAsyncTask();
 
         //초기스펠값
-         name11 = "teleport";
-         name12 = "flash";
-         name21 = "gangta";
-         name22 = "flash";
-         name31 = "teleport";
-         name32 = "flash";
-         name41 = "heal";
-         name42 = "flash";
-         name51 = "jumhwa";
-         name52 = "flash";
+        name11 = "teleport";
+        name12 = "flash";
+        name21 = "gangta";
+        name22 = "flash";
+        name31 = "teleport";
+        name32 = "flash";
+        name41 = "heal";
+        name42 = "flash";
+        name51 = "jumhwa";
+        name52 = "flash";
 
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,20 +444,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //시작버튼
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //구글애드몹
-                if(mInterstitialAd.isLoaded()){
+                if (mInterstitialAd.isLoaded()) {
                     mInterstitialAd.show();
-                }else{
+                } else {
                     Log.d(TAG, "The interstitial wasn't loaded yet.");
                 }
+            /*    if(bSwitch.isChecked()) {
+                    voiceAsyncTask.cancel(true);
+                    voiceAsyncTask = new VoiceAsyncTask();
+                    voiceAsyncTask.executeOnExecutor(threadPool);
+                }else{
+                    voiceAsyncTask.cancel(true);
+                }*/
 
                 if (!isStart) { //시작
                     isStart = true;
                     startButton.setText("TIMER STOP");
-
                 } else { //중지
                     isStart = false;
                     //실행중인 스레드 다 종료
@@ -1051,6 +1350,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public class VoiceAsyncTask extends AsyncTask<Integer, Integer, Integer> {
+
+        @Override
+        protected Integer doInBackground(Integer... integers) {
+            while ((isCancelled() == false) && bSwitch.isChecked() ) { //종료되거나 stop안누른경우
+                publishProgress();
+                try {
+                    Thread.sleep(2500);
+                } catch (InterruptedException ex) {
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            speechRecognition.startSpeechRecognition();
+        }
+    }
+
+
     public class Spell11AsyncTask extends AsyncTask<Integer, Integer, Integer> {
         int leftTime;   //스펠 남은시간
         int originalTIme; //스펠 초기시간
@@ -1081,6 +1401,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell11TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell11TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell11TextView.setText(values[0].toString());
             }
@@ -1092,9 +1415,6 @@ public class MainActivity extends AppCompatActivity {
             spell11TextView.setTextColor(Color.parseColor("#000000"));
             spell11TextView.setText(originalTIme + "");
             setSpellImage(request11, name11, true);
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
         }
 
         @Override
@@ -1137,6 +1457,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell12TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell12TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell12TextView.setText(values[0].toString());
             }
@@ -1148,9 +1471,6 @@ public class MainActivity extends AppCompatActivity {
             spell12TextView.setTextColor(Color.parseColor("#000000"));
             spell12TextView.setText(originalTIme + "");
             setSpellImage(request12, name12, true);
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
         }
 
         @Override
@@ -1192,6 +1512,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell21TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell21TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell21TextView.setText(values[0].toString());
             }
@@ -1202,9 +1525,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell21TextView.setTextColor(Color.parseColor("#000000"));
             spell21TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request21, name21, true);
         }
 
@@ -1248,6 +1568,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell22TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell22TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell22TextView.setText(values[0].toString());
             }
@@ -1258,9 +1581,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell22TextView.setTextColor(Color.parseColor("#000000"));
             spell22TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request22, name22, true);
         }
 
@@ -1304,6 +1624,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell31TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell31TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell31TextView.setText(values[0].toString());
             }
@@ -1314,9 +1637,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell31TextView.setTextColor(Color.parseColor("#000000"));
             spell31TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request31, name31, true);
         }
 
@@ -1360,6 +1680,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell32TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell32TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell32TextView.setText(values[0].toString());
             }
@@ -1370,9 +1693,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell32TextView.setTextColor(Color.parseColor("#000000"));
             spell32TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request32, name32, true);
         }
 
@@ -1416,6 +1736,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell41TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell41TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell41TextView.setText(values[0].toString());
             }
@@ -1426,9 +1749,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell41TextView.setTextColor(Color.parseColor("#000000"));
             spell41TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request41, name41, true);
         }
 
@@ -1472,6 +1792,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell42TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell42TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell42TextView.setText(values[0].toString());
             }
@@ -1483,9 +1806,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell42TextView.setTextColor(Color.parseColor("#000000"));
             spell42TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request42, name42, true);
         }
 
@@ -1529,6 +1849,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell51TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell51TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell51TextView.setText(values[0].toString());
             }
@@ -1539,9 +1862,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell51TextView.setTextColor(Color.parseColor("#000000"));
             spell51TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request51, name51, true);
         }
 
@@ -1585,6 +1905,9 @@ public class MainActivity extends AppCompatActivity {
             if (values[0].intValue() <= 30) {
                 spell52TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell52TextView.setText(values[0].toString());
+                if (aSwitch.isChecked() && values[0].intValue() == 5) {
+                    vibrator.vibrate(1000); // 1초간 진동
+                }
             } else {
                 spell52TextView.setText(values[0].toString());
             }
@@ -1595,9 +1918,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Integer integer) {
             spell52TextView.setTextColor(Color.parseColor("#000000"));
             spell52TextView.setText(originalTIme + "");
-            if (aSwitch.isChecked()) {
-                vibrator.vibrate(1000); // 1초간 진동
-            }
             setSpellImage(request52, name52, true);
         }
 
@@ -1609,17 +1929,4 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-   /* //애드몹관련
-    private void adMob(){
-        MobileAds.initialize(this, getString(R.string.add_mob));
-        AdView mAdView = findViewById(R.id.adView);
-        Bundle extras = new Bundle();
-        extras.putString("max_ad_content_rating", "G"); // 앱이 3세 이상 사용가능이라면 광고레벨을 설정해줘야 한다
-        AdRequest adRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(AdMobAdapter.class, extras)
-                .build();
-        mAdView.loadAd(adRequest);
-    }*/
-
 }
