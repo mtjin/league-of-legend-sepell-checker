@@ -2,6 +2,7 @@ package com.mtjin.lol_spellchecker;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -12,8 +13,10 @@ import android.os.Vibrator;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,9 +38,10 @@ import com.maxwell.speechrecognition.OnSpeechRecognitionPermissionListener;
 import com.maxwell.speechrecognition.SpeechRecognition;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import static android.speech.tts.TextToSpeech.ERROR;
 public class MainActivity extends AppCompatActivity implements OnSpeechRecognitionListener, OnSpeechRecognitionPermissionListener {
     TextView spell11TextView;
     TextView spell12TextView;
@@ -51,8 +55,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     TextView spell52TextView;
     Button startButton;
     Button searchButton;
+    Button usageButton; //사용법버튼
     Switch aSwitch;
     Switch bSwitch;
+    Switch cSwitch;
 
     Boolean isStart;
 
@@ -110,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     //스레드개수
     ExecutorService threadPool = Executors.newFixedThreadPool(12);
 
+    //음성출력(TTS)
+    private TextToSpeech tts;
+
     final int PERMISSION = 1;
 
 
@@ -136,7 +145,9 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     @Override
     public void OnSpeechRecognitionFinalResult(String s) {
         Log.d(TAG, "OnSpeechRecognitionFinalResult:        " + s);
-        if (s.trim().equals("탑") || s.trim().equals("타압") || s.trim().equals("탓") || s.trim().equals("팝") || s.trim().equals("탁") || s.trim().equals("탐") || s.trim().equals("답")) {
+        if (s.trim().equals("탑") || s.trim().equals("타압") || s.trim().equals("탓") || s.trim().equals("팝") || s.trim().equals("탁") || s.trim().equals("탐")
+                || s.trim().equals("답") || s.trim().equals("닭") || s.trim().equals("덫") | s.trim().equals("밥") || s.trim().equals("다")
+                    || s.trim().equals("타")|| s.trim().equals("박")) {
             if (isStart) {
                 if (spell11AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell11AsyncTask.cancel(true);
@@ -157,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         }
         else if(s.trim().equals("탑스") || s.trim().equals("타압스") || s.trim().equals("탓스") || s.trim().equals("팝스") || s.trim().equals("탁스") || s.trim().equals("탐스") || s.trim().equals("답스")
                 || s.trim().equals("탑쓰") || s.trim().equals("타압쓰") || s.trim().equals("탓쓰") || s.trim().equals("팝쓰") || s.trim().equals("탁쓰") || s.trim().equals("탐쓰") || s.trim().equals("답쓰")
-                || s.trim().equals("닥쓰") || s.trim().equals("닥스")){
+                || s.trim().equals("닥쓰") || s.trim().equals("닥스") || s.trim().equals("다스") || s.trim().equals("박세") || s.trim().equals("잡스")|| s.trim().equals("다시")){
             if (isStart) {
                 if (spell12AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell12AsyncTask.cancel(true);
@@ -176,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         }
         else  if (s.trim().equals("정글") || s.trim().equals("전글") || s.trim().equals("정클") || s.trim().equals("점글") || s.trim().equals("정그")
-                || s.trim().equals("정걸") || s.trim().equals("전걸")) {
+                || s.trim().equals("정걸") || s.trim().equals("전걸")|| s.trim().equals("전갈")|| s.trim().equals("전골")) {
             if (isStart) {
                 if (spell21AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell21AsyncTask.cancel(true);
@@ -196,7 +207,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         }
         else  if (s.trim().equals("정글스") || s.trim().equals("전글스") || s.trim().equals("정클스") || s.trim().equals("점글스") || s.trim().equals("정그스")
-                || s.trim().equals("정걸스") || s.trim().equals("전걸스")|| s.trim().equals("정글s") || s.trim().equals("정글 s")) {
+                || s.trim().equals("정걸스") || s.trim().equals("전걸스")|| s.trim().equals("정글s") || s.trim().equals("정글 s")|| s.trim().equals("전 결승")
+                || s.trim().equals("전결승") ) {
             if (isStart) {
                 if (spell22AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell22AsyncTask.cancel(true);
@@ -216,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         }
         else  if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
-                || s.trim().equals("비들") || s.trim().equals("미든")) {
+                || s.trim().equals("비들") || s.trim().equals("미든")|| s.trim().equals("리드")|| s.trim().equals("매드")) {
             if (isStart) {
                 if (spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell31AsyncTask.cancel(true);
@@ -236,7 +248,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         }
         else  if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
-                || s.trim().equals("미즈") || s.trim().equals("미스")|| s.trim().equals("미드쓰") || s.trim().equals("미들스")) {
+                || s.trim().equals("미즈") || s.trim().equals("미스")|| s.trim().equals("미드쓰") || s.trim().equals("미들스")|| s.trim().equals("위디스")|| s.trim().equals("미드 스")
+                || s.trim().equals("미래에셋")) {
             if (isStart) {
                 if (spell32AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell32AsyncTask.cancel(true);
@@ -315,7 +328,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         }
         else  if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스")|| s.trim().equals("써포터스")
-                || s.trim().equals("supports") || s.trim().equals("supporters")|| s.trim().equals("서퍼스")|| s.trim().equals("서폿스")) {
+                || s.trim().equals("supports") || s.trim().equals("supporters")|| s.trim().equals("서퍼스")|| s.trim().equals("서폿스")|| s.trim().equals("소프트하우스")
+                || s.trim().equals("서커스")) {
             if (isStart) {
                 if (spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell52AsyncTask.cancel(true);
@@ -362,9 +376,9 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //화면 안꺼지게하기
         //구글애드몹
-        MobileAds.initialize(this, "ca-app-pub-8924705805317182/3164737399");
+        MobileAds.initialize(this, "ca-app-pub-7841024731557732/9481737889");
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-8924705805317182/3164737399");
+        mInterstitialAd.setAdUnitId("ca-app-pub-7841024731557732/9481737889");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
         //음성인식 퍼미션
         if (Build.VERSION.SDK_INT >= 23) {
@@ -381,6 +395,18 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         speechRecognition.setSpeechRecognitionPermissionListener(this);
         speechRecognition.setSpeechRecognitionListener(this);
 
+        //음성출력
+        // TTS를 생성하고 OnInitListener로 초기화 한다.
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != ERROR) {
+                    // 언어를 선택한다.
+                    tts.setLanguage(Locale.ENGLISH);
+                }
+            }
+        });
+
         isStart = false;
         spell11TextView = findViewById(R.id.spell11);
         spell12TextView = findViewById(R.id.spell12);
@@ -394,8 +420,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         spell52TextView = findViewById(R.id.spell52);
         startButton = findViewById(R.id.startBtn);
         searchButton = findViewById(R.id.searchBtn);
+        usageButton = findViewById(R.id.usuage_btn);
         aSwitch = findViewById(R.id.switch1);
         bSwitch = findViewById(R.id.switch2);
+        cSwitch = findViewById(R.id.switch3);
         //진동
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         //보이스스위치
@@ -403,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    Toast.makeText(getApplicationContext(), "Say Spell in 2.5 seconds(Speak to the ringtone timing)", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Speak spell to the ringtone timing", Toast.LENGTH_LONG).show();
                         voiceAsyncTask.cancel(true);
                         voiceAsyncTask = new VoiceAsyncTask();
                         voiceAsyncTask.executeOnExecutor(threadPool);
@@ -435,6 +463,33 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         name42 = "flash";
         name51 = "jumhwa";
         name52 = "flash";
+
+        //사용법버튼
+        usageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, UsageDialogActivity.class);
+                startActivity(intent);
+               /* final CharSequence[] usageModels = {"한국말 사용법", "ENGLISH USAGE"};
+                AlertDialog.Builder alt_bld = new AlertDialog.Builder(getApplicationContext());
+                //alt_bld.setIcon(R.drawable.icon);
+                alt_bld.setTitle("사용법 USAGE");
+                alt_bld.setSingleChoiceItems(usageModels, -1, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int item) {
+                        Toast.makeText(MainActivity.this, usageModels[item] + "가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                        if (item == 0) {
+                            Intent intent = new Intent(MainActivity.this, UsageActivity.class);
+                            startActivity(intent);
+                        } else if (item == 1) {
+                            Intent intent = new Intent(MainActivity.this, Usage2Activity.class);
+                            startActivity(intent);
+                        }
+                    }
+                });
+                AlertDialog alert = alt_bld.create();
+                alert.show();*/
+            }
+        });
 
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1357,7 +1412,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             while ((isCancelled() == false) && bSwitch.isChecked() ) { //종료되거나 stop안누른경우
                 publishProgress();
                 try {
-                    Thread.sleep(2500);
+                    Thread.sleep(1500);
                 } catch (InterruptedException ex) {
                 }
             }
@@ -1366,6 +1421,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
         @Override
         protected void onProgressUpdate(Integer... values) {
+          //  Toast.makeText(getApplicationContext(), "Speak spell to the ringtone timing", Toast.LENGTH_SHORT).show();
             speechRecognition.startSpeechRecognition();
         }
     }
@@ -1401,8 +1457,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell11TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell11TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("Top first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell11TextView.setText(values[0].toString());
@@ -1457,8 +1518,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell12TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell12TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if ( values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("Top second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell12TextView.setText(values[0].toString());
@@ -1512,8 +1578,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell21TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell21TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if ( values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("Jungle first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell21TextView.setText(values[0].toString());
@@ -1568,8 +1639,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell22TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell22TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+
+                    if(cSwitch.isChecked()) {
+                        tts.speak("Jungle second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell22TextView.setText(values[0].toString());
@@ -1624,8 +1701,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell31TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell31TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("mid first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell31TextView.setText(values[0].toString());
@@ -1680,8 +1762,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell32TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell32TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("mid second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell32TextView.setText(values[0].toString());
@@ -1736,8 +1823,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell41TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell41TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("AD carry first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell41TextView.setText(values[0].toString());
@@ -1792,8 +1884,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell42TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell42TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("AD carry first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell42TextView.setText(values[0].toString());
@@ -1849,8 +1946,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell51TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell51TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("Supporter first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell51TextView.setText(values[0].toString());
@@ -1905,8 +2007,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell52TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell52TextView.setText(values[0].toString());
-                if (aSwitch.isChecked() && values[0].intValue() == 5) {
-                    vibrator.vibrate(1000); // 1초간 진동
+                if (values[0].intValue() == 5) {
+                    if(aSwitch.isChecked()) {
+                        vibrator.vibrate(1000); // 1초간 진동
+                    }
+                    if(cSwitch.isChecked()) {
+                        tts.speak("Supporter second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
+                    }
                 }
             } else {
                 spell52TextView.setText(values[0].toString());
@@ -1928,5 +2035,16 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             setSpellImage(request52, name52, true);
         }
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // TTS 객체가 남아있다면 실행을 중지하고 메모리에서 제거한다.
+        if(tts != null){
+            tts.stop();
+            tts.shutdown();
+            tts = null;
+        }
     }
 }

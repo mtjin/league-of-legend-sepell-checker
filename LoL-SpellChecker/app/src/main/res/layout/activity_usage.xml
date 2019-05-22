@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".UsageActivity">
+
+    <TextView
+        android:id="@+id/usage_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="[사용법]
+안녕하세요. 이 앱을 만든 mtjin입니다. 초보가 만든거라 불편하신점도 있겠지만 다운받아주셔서 감사합니다.
+시간이 되시면 피드백도 해주시면 감사하겠습니다.! 사용법은 플레이스토어에도 써놨지만 여기에도 간략하게 알려드립니다.
+voice 스위치와 vibrate 스위치는 각각 음성과 진동 알람기능이고 스펠이 돌아오기 5초전에 알람이 울립니다.
+그리고 speech 스위치를 키면 음성인식이 작동하여 음성으로 스펠을 사용했다고 앱에 알려줄 수 있습니다.
+각각 위에서 아래부터 탑 탑스, 정글 정글스, 미드 미드스, 에이디 에이디스, 서포터 서포터스라고 말하면 작동할겁니다.(참고 : https://www.youtube.com/watch?v=NZEK62f2vWg)
+나머지는 몇번 만지다 보시면 쉽게 사용법을 익히실 수 있으실겁니다.
+"
+        android:textColor="@color/textColor"
+        android:textIsSelectable="true"
+        android:textSize="18dp" />
+    <TextView
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/timeColor"
+        android:textSize="20dp"
+        android:text="★추가로 왜그런지는 모르겠는데 인터넷 연결상태여야 음성인식을 더 잘합니다. 인터넷요금은 안나가니 안심해주세요 ^^ 감사합니다 즐롤하세요~."/>
+</LinearLayout>

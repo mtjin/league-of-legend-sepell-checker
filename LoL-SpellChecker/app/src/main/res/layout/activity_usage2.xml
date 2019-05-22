@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Usage2Activity">
+    <TextView
+        android:id="@+id/usage2_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="[How to use]
+Hi. Mtjin. I created this app. I would like to thank you for downloading.
+If you have time, I would appreciate your feedback! It's written in the Play Store, but here's a quick tip.
+The voice and vibrate switches each have a voice and vibration alarm and an alarm sounds five seconds before the spell returns.
+And when you turn on the speech switch, you can tell your app that speech recognition works and spells are used as a voice.
+From top to bottom=>say! top-tops, jungle-jungles, mid-mids, AD- ADs, supporter-supporters, it will work (see: https://www.youtube.com/watch?v=NZEK62f2vWg)
+You can learn how to use it easily by touching the rest a few times.
+"
+        android:textColor="@color/textColor"
+        android:textIsSelectable="true"
+        android:textSize="18dp" />
+    <TextView
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/timeColor"
+        android:textSize="20dp"
+        android:text="★ I do not know why, but I need to be connected to the internet to do voice recognition better. Please do not worry about internet charges. ^^ Thank you very much."/>
+</LinearLayout>
