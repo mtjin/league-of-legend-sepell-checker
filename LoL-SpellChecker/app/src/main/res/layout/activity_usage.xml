@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -29,5 +29,6 @@ voice 스위치와 vibrate 스위치는 각각 음성과 진동 알람기능이�
         android:layout_height="wrap_content"
         android:textColor="@color/timeColor"
         android:textSize="20dp"
-        android:text="★추가로 왜그런지는 모르겠는데 인터넷 연결상태여야 음성인식을 더 잘합니다. 인터넷요금은 안나가니 안심해주세요 ^^ 감사합니다 즐롤하세요~."/>
-</LinearLayout>
+        android:text="★추가로 왜그런지는 모르겠는데 인터넷 연결상태여야 음성인식을 더 잘합니다. 인터넷요금은 안나가니 안심해주세요 ^^ 감사합니다 즐롤하세요~.
+2019..5.28 업데이트 : 2번째 스킬에 '스'말고 '플' 을 말해도 음성인식이 됩니다. 두번째 스킬에 점멸을 드는 경우가 많아서 플래쉬의 플을 붙이면 더편하지 않을까 하고 추가했습니다."  />
+</ScrollView>
