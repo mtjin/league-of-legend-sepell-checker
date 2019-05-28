@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="8dp"
     android:orientation="vertical"
+    android:id="@+id/layout"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -279,14 +279,16 @@
             android:textStyle="bold" />
     </LinearLayout>
 
- <!--   <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adView"
-        android:layout_width="wrap_content"
+    <com.fsn.cauly.CaulyAdView
+        xmlns:app="http://schemas.android.com/apk/res/com.mtjin.lol_spellchecker"
+        android:id="@+id/xmladview"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        ads:adSize="BANNER"
-        ads:adUnitId="@string/add_mob">
-    </com.google.android.gms.ads.AdView>-->
+        app:appcode="FyiWuKSZ "
+        app:effect="RightSlide"
+        app:dynamicReloadInterval="true"
+        app:reloadInterval="20"
+        app:bannerHeight="Fixed_50"
+        />
 </LinearLayout>

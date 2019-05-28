@@ -10,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 
 import android.os.Vibrator;
-import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -20,6 +19,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -29,20 +29,152 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.MobileAds;
+import com.fsn.cauly.CaulyAdInfo;
+import com.fsn.cauly.CaulyAdInfoBuilder;
+import com.fsn.cauly.CaulyAdView;
+import com.fsn.cauly.CaulyCloseAd;
+import com.fsn.cauly.CaulyCloseAdListener;
+import com.fsn.cauly.CaulyInterstitialAd;
+import com.fsn.cauly.CaulyInterstitialAdListener;
 import com.maxwell.speechrecognition.OnSpeechRecognitionListener;
 import com.maxwell.speechrecognition.OnSpeechRecognitionPermissionListener;
 import com.maxwell.speechrecognition.SpeechRecognition;
 
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import static android.speech.tts.TextToSpeech.ERROR;
-public class MainActivity extends AppCompatActivity implements OnSpeechRecognitionListener, OnSpeechRecognitionPermissionListener {
+
+public class MainActivity extends AppCompatActivity implements OnSpeechRecognitionListener, OnSpeechRecognitionPermissionListener, CaulyInterstitialAdListener, CaulyCloseAdListener {
+
+    //카울리광고
+   private boolean showInterstitial = false;
+    private static final String APP_CODE = "FyiWuKSZ"; // 광고 요청을 위한 App Code
+    CaulyCloseAd mCloseAd ;
+
+    // Back Key가 눌러졌을 때, CloseAd 호출
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 앱을 처음 설치하여 실행할 때, 필요한 리소스를 다운받았는지 여부.
+            if (mCloseAd.isModuleLoaded())
+            {
+                mCloseAd.show(this);
+            }
+            else
+            {
+                // 광고에 필요한 리소스를 한번만  다운받는데 실패했을 때 앱의 종료팝업 구현
+                showDefaultClosePopup();
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void showDefaultClosePopup()
+    {
+        new AlertDialog.Builder(this).setTitle("").setMessage("종료 하시겠습니까?")
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setNegativeButton("아니요",null)
+                .show();
+    }
+
+    // CaulyCloseAdListener
+    @Override
+    public void onFailedToReceiveCloseAd(CaulyCloseAd ad, int errCode,String errMsg) {
+    }
+    // CloseAd의 광고를 클릭하여 앱을 벗어났을 경우 호출되는 함수이다.
+    @Override
+    public void onLeaveCloseAd(CaulyCloseAd ad) {
+    }
+    // CloseAd의 request()를 호출했을 때, 광고의 여부를 알려주는 함수이다.
+    @Override
+    public void onReceiveCloseAd(CaulyCloseAd ad, boolean isChargable) {
+
+    }
+    //왼쪽 버튼을 클릭 하였을 때, 원하는 작업을 수행하면 된다.
+    @Override
+    public void onLeftClicked(CaulyCloseAd ad) {
+
+    }
+    //오른쪽 버튼을 클릭 하였을 때, 원하는 작업을 수행하면 된다.
+    //Default로는 오른쪽 버튼이 종료로 설정되어있다.
+    @Override
+    public void onRightClicked(CaulyCloseAd ad) {
+        finish();
+    }
+    @Override
+    public void onShowedCloseAd(CaulyCloseAd ad, boolean isChargable) {
+    }
+
+    // Activity 버튼 처리
+    // - 전면 광고 요청 버튼
+    public void onRequestInterstitial(View button) {
+
+        // CaulyAdInfo 생성
+        CaulyAdInfo adInfo = new CaulyAdInfoBuilder(APP_CODE).build();
+
+        // 전면 광고 생성
+        CaulyInterstitialAd interstial = new CaulyInterstitialAd();
+        interstial.setAdInfo(adInfo);
+        interstial.setInterstialAdListener(this);
+
+        // 전면광고 노출 후 back 버튼 사용을 막기 원할 경우 disableBackKey();을 추가한다
+        // 단, requestInterstitialAd 위에서 추가되어야 합니다.
+        // interstitialAd.disableBackKey();
+
+        // 광고 요청. 광고 노출은 CaulyInterstitialAdListener의 onReceiveInterstitialAd에서 처리한다.
+        interstial.requestInterstitialAd(this);
+        // 전면 광고 노출 플래그 활성화
+        showInterstitial = true;
+    }
+
+    // - 전면 광고 노출 취소 버튼
+    public void onCancelInterstitial(View button) {
+        // 전면 광고 노출 플래그 비활성화
+        showInterstitial = false;
+    }
+
+    // CaulyInterstitialAdListener
+    //전면 광고의 경우, 광고 수신 후 자동으로 노출되지 않으므로,
+    //반드시 onReceiveInterstitialAd 메소드에서 노출 처리해 주어야 한다.
+    @Override
+    public void onReceiveInterstitialAd(CaulyInterstitialAd ad, boolean isChargeableAd) {
+        // 광고 수신 성공한 경우 호출됨.
+        // 수신된 광고가 무료 광고인 경우 isChargeableAd 값이 false 임.
+        if (isChargeableAd == false) {
+            Log.d("CaulyExample", "free interstitial AD received.");
+        }else {
+            Log.d("CaulyExample", "normal interstitial AD received.");
+        }
+        // 노출 활성화 상태이면, 광고 노출
+        if (showInterstitial)
+            ad.show();
+        else
+            ad.cancel();
+    }
+    @Override
+    public void onFailedToReceiveInterstitialAd(CaulyInterstitialAd ad, int errorCode, String errorMsg) {
+        // 전면 광고 수신 실패할 경우 호출됨.
+        Log.d("CaulyExample", "failed to receive interstitial AD.");
+    }
+    @Override
+    public void onClosedInterstitialAd(CaulyInterstitialAd ad) {
+        // 전면 광고가 닫힌 경우 호출됨.
+        Log.d("CaulyExample", "interstitial AD closed.");
+    }
+
+    @Override
+    public void onLeaveInterstitialAd(CaulyInterstitialAd caulyInterstitialAd) {
+
+    }
+
     TextView spell11TextView;
     TextView spell12TextView;
     TextView spell21TextView;
@@ -104,15 +236,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     String name; //스펠이름
     int time; //스펠시간초
 
-    //애드몹
-    private InterstitialAd mInterstitialAd;
 
     final static String TAG = "MainTAG";
 
     //구글음성인식용(SST)
     private Intent mIntent;
     SpeechRecognizer mRecognizer;
-     SpeechRecognition speechRecognition;
+    SpeechRecognition speechRecognition;
     //스레드개수
     ExecutorService threadPool = Executors.newFixedThreadPool(12);
 
@@ -125,6 +255,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     @Override
     protected void onResume() {
         super.onResume();
+        if (mCloseAd != null)
+            mCloseAd.resume(this); // 필수 호출
     }
 
     @Override
@@ -147,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         Log.d(TAG, "OnSpeechRecognitionFinalResult:        " + s);
         if (s.trim().equals("탑") || s.trim().equals("타압") || s.trim().equals("탓") || s.trim().equals("팝") || s.trim().equals("탁") || s.trim().equals("탐")
                 || s.trim().equals("답") || s.trim().equals("닭") || s.trim().equals("덫") | s.trim().equals("밥") || s.trim().equals("다")
-                    || s.trim().equals("타")|| s.trim().equals("박")) {
+                || s.trim().equals("타") || s.trim().equals("박")) {
             if (isStart) {
                 if (spell11AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell11AsyncTask.cancel(true);
@@ -165,10 +297,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request11);
             }
-        }
-        else if(s.trim().equals("탑스") || s.trim().equals("타압스") || s.trim().equals("탓스") || s.trim().equals("팝스") || s.trim().equals("탁스") || s.trim().equals("탐스") || s.trim().equals("답스")
+        } else if (s.trim().equals("탑스") || s.trim().equals("타압스") || s.trim().equals("탓스") || s.trim().equals("팝스") || s.trim().equals("탁스") || s.trim().equals("탐스") || s.trim().equals("답스")
                 || s.trim().equals("탑쓰") || s.trim().equals("타압쓰") || s.trim().equals("탓쓰") || s.trim().equals("팝쓰") || s.trim().equals("탁쓰") || s.trim().equals("탐쓰") || s.trim().equals("답쓰")
-                || s.trim().equals("닥쓰") || s.trim().equals("닥스") || s.trim().equals("다스") || s.trim().equals("박세") || s.trim().equals("잡스")|| s.trim().equals("다시")){
+                || s.trim().equals("닥쓰") || s.trim().equals("닥스") || s.trim().equals("다스") || s.trim().equals("박세") || s.trim().equals("잡스") || s.trim().equals("다시")
+                | s.trim().equals("탑플") | s.trim().equals("닥플") | s.trim().equals("타플") | s.trim().equals("터틀")) {
             if (isStart) {
                 if (spell12AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell12AsyncTask.cancel(true);
@@ -185,9 +317,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request12);
             }
-        }
-        else  if (s.trim().equals("정글") || s.trim().equals("전글") || s.trim().equals("정클") || s.trim().equals("점글") || s.trim().equals("정그")
-                || s.trim().equals("정걸") || s.trim().equals("전걸")|| s.trim().equals("전갈")|| s.trim().equals("전골")) {
+        } else if (s.trim().equals("정글") || s.trim().equals("전글") || s.trim().equals("정클") || s.trim().equals("점글") || s.trim().equals("정그")
+                || s.trim().equals("정걸") || s.trim().equals("전걸") || s.trim().equals("전갈") || s.trim().equals("전골")) {
             if (isStart) {
                 if (spell21AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell21AsyncTask.cancel(true);
@@ -205,10 +336,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request21);
             }
-        }
-        else  if (s.trim().equals("정글스") || s.trim().equals("전글스") || s.trim().equals("정클스") || s.trim().equals("점글스") || s.trim().equals("정그스")
-                || s.trim().equals("정걸스") || s.trim().equals("전걸스")|| s.trim().equals("정글s") || s.trim().equals("정글 s")|| s.trim().equals("전 결승")
-                || s.trim().equals("전결승") ) {
+        } else if (s.trim().equals("정글스") || s.trim().equals("전글스") || s.trim().equals("정클스") || s.trim().equals("점글스") || s.trim().equals("정그스")
+                || s.trim().equals("정걸스") || s.trim().equals("전걸스") || s.trim().equals("정글s") || s.trim().equals("정글 s") || s.trim().equals("전 결승")
+                || s.trim().equals("전결승") || s.trim().equals("잠금 어플") || s.trim().equals("정글 풀") || s.trim().equals("정 베풀") || s.trim().equals("정 급해")
+                || s.trim().equals("정글 파일") || s.trim().equals("정글 플") || s.trim().equals("정갑철") || s.trim().equals("정글 클") || s.trim().equals("정 베플")
+                || s.trim().equals("정글펫")) {
             if (isStart) {
                 if (spell22AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell22AsyncTask.cancel(true);
@@ -226,9 +358,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request22);
             }
-        }
-        else  if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
-                || s.trim().equals("비들") || s.trim().equals("미든")|| s.trim().equals("리드")|| s.trim().equals("매드")) {
+        } else if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
+                || s.trim().equals("비들") || s.trim().equals("미든") || s.trim().equals("리드") || s.trim().equals("매드")|| s.trim().equals("미래")) {
             if (isStart) {
                 if (spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell31AsyncTask.cancel(true);
@@ -246,10 +377,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request31);
             }
-        }
-        else  if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
-                || s.trim().equals("미즈") || s.trim().equals("미스")|| s.trim().equals("미드쓰") || s.trim().equals("미들스")|| s.trim().equals("위디스")|| s.trim().equals("미드 스")
-                || s.trim().equals("미래에셋")) {
+        } else if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
+                || s.trim().equals("미즈") || s.trim().equals("미스") || s.trim().equals("미드쓰") || s.trim().equals("미들스") || s.trim().equals("위디스") || s.trim().equals("미드 스")
+                || s.trim().equals("미래에셋")  || s.trim().equals("미드 플")  || s.trim().equals("미드 풀")  || s.trim().equals("리플")  || s.trim().equals("미드 클")
+                || s.trim().equals("매드피플") || s.trim().equals("이대팔")
+                || s.trim().equals("미드 8") || s.trim().equals("애플") || s.trim().equals("뷰티풀")) {
             if (isStart) {
                 if (spell32AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell32AsyncTask.cancel(true);
@@ -267,8 +399,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request32);
             }
-        }
-        else  if (s.trim().equals("ad") || s.trim().equals("ag") || s.trim().equals("에이디") || s.trim().equals("에디") || s.trim().equals("애이디")
+        } else if (s.trim().equals("ad") || s.trim().equals("ag") || s.trim().equals("에이디") || s.trim().equals("에디") || s.trim().equals("애이디")
                 || s.trim().equals("az") || s.trim().equals("에이드")) {
             if (isStart) {
                 if (spell41AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
@@ -287,9 +418,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request41);
             }
-        }
-        else  if (s.trim().equals("ads") || s.trim().equals("에이디스") || s.trim().equals("에디슨") || s.trim().equals("레이디스")|| s.trim().equals("앨리스")
-                || s.trim().equals("azs") || s.trim().equals("에이드스")) {
+        } else if (s.trim().equals("ads") || s.trim().equals("에이디스") || s.trim().equals("에디슨") || s.trim().equals("레이디스") || s.trim().equals("앨리스")
+                || s.trim().equals("azs") || s.trim().equals("에이드스")  || s.trim().equals("adpr")  || s.trim().equals("Adele")  || s.trim().equals("에듀플")
+                || s.trim().equals("데드풀")  || s.trim().equals("AD 풀") || s.trim().equals("AD 플") || s.trim().equals("애기풀")  || s.trim().equals("에이지플")
+                || s.trim().equals("엘디플")  || s.trim().equals("LG 풀")  || s.trim().equals("에듀플")  || s.trim().equals("AV 풀")  || s.trim().equals("원 데이트")
+                || s.trim().equals("원더풀")  || s.trim().equals("언제 풀")  || s.trim().equals("원딜 풀")  || s.trim().equals("원 대패")  || s.trim().equals("원재필")
+                || s.trim().equals("언제 풀")  || s.trim().equals("원 들풀")  || s.trim().equals("원주 애플")  || s.trim().equals("원들 풀") || s.trim().equals("애니 클")
+                || s.trim().equals("애니플") || s.trim().equals("돼지풀")  || s.trim().equals("원 제클") ) {
+
             if (isStart) {
                 if (spell42AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell42AsyncTask.cancel(true);
@@ -307,9 +443,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request42);
             }
-        }
-        else  if (s.trim().equals("서포터") || s.trim().equals("섯포터") || s.trim().equals("서포털") || s.trim().equals("스퍼터")|| s.trim().equals("써포터")
-                || s.trim().equals("support") || s.trim().equals("supporter")|| s.trim().equals("서폿")||s.trim().equals("Super")||s.trim().equals("super")||s.trim().equals("수퍼")) {
+        } else if (s.trim().equals("서포터") || s.trim().equals("섯포터") || s.trim().equals("서포털") || s.trim().equals("스퍼터") || s.trim().equals("써포터")
+                || s.trim().equals("support") || s.trim().equals("supporter") || s.trim().equals("서폿") || s.trim().equals("Super") || s.trim().equals("super") || s.trim().equals("수퍼")) {
             if (isStart) {
                 if (spell51AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell51AsyncTask.cancel(true);
@@ -326,10 +461,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
                 startActivityForResult(intent, request51);
             }
-        }
-        else  if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스")|| s.trim().equals("써포터스")
-                || s.trim().equals("supports") || s.trim().equals("supporters")|| s.trim().equals("서퍼스")|| s.trim().equals("서폿스")|| s.trim().equals("소프트하우스")
-                || s.trim().equals("서커스")) {
+        } else if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스") || s.trim().equals("써포터스")
+                || s.trim().equals("supports") || s.trim().equals("supporters") || s.trim().equals("서퍼스") || s.trim().equals("서폿스") || s.trim().equals("소프트하우스")
+                || s.trim().equals("서커스") || s.trim().equals("써플")  || s.trim().equals("서플")  || s.trim().equals("서커스")  || s.trim().equals("서커스")
+                || s.trim().equals("서포터 풀")  || s.trim().equals("버터플")  || s.trim().equals("서포터 펜")  || s.trim().equals("스포탑 펫")  || s.trim().equals("서포터 어플")
+                || s.trim().equals("서포터 호텔")) {
             if (isStart) {
                 if (spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell52AsyncTask.cancel(true);
@@ -375,11 +511,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //화면 안꺼지게하기
-        //구글애드몹
-        MobileAds.initialize(this, "ca-app-pub-7841024731557732/9481737889");
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-7841024731557732/9481737889");
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
         //음성인식 퍼미션
         if (Build.VERSION.SDK_INT >= 23) {
             // 퍼미션 체크
@@ -387,11 +519,26 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                     Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
 
+        //CloseAd 초기화
+        CaulyAdInfo closeAdInfo = new CaulyAdInfoBuilder(APP_CODE).build();
+        mCloseAd = new CaulyCloseAd();
+
+ 			/*  Optional
+ 			//원하는 버튼의 문구를 설정 할 수 있다.
+ 			mCloseAd.setButtonText("취소", "종료");
+ 			//원하는 텍스트의 문구를 설정 할 수 있다.
+ 			mCloseAd.setDescriptionText("종료하시겠습니까?");
+ 			*/
+        mCloseAd.setAdInfo(closeAdInfo);
+        mCloseAd.setCloseAdListener(this); // CaulyCloseAdListener 등록
+        // 종료광고 노출 후 back버튼 사용을 막기 원할 경우 disableBackKey();을 추가한다
+         mCloseAd.disableBackKey();
+
         //음성인식
         mIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         mIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
         mIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-          speechRecognition = new SpeechRecognition(this);
+        speechRecognition = new SpeechRecognition(this);
         speechRecognition.setSpeechRecognitionPermissionListener(this);
         speechRecognition.setSpeechRecognitionListener(this);
 
@@ -400,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status != ERROR) {
+                if (status != ERROR) {
                     // 언어를 선택한다.
                     tts.setLanguage(Locale.ENGLISH);
                 }
@@ -430,11 +577,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         bSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                        Toast.makeText(getApplicationContext(), "Speak spell to the ringtone timing", Toast.LENGTH_LONG).show();
-                        voiceAsyncTask.cancel(true);
-                        voiceAsyncTask = new VoiceAsyncTask();
-                        voiceAsyncTask.executeOnExecutor(threadPool);
+                if (isChecked) {
+                    Toast.makeText(getApplicationContext(), "Speak spell to the ringtone timing", Toast.LENGTH_LONG).show();
+                    voiceAsyncTask.cancel(true);
+                    voiceAsyncTask = new VoiceAsyncTask();
+                    voiceAsyncTask.executeOnExecutor(threadPool);
                 }
             }
         });
@@ -503,12 +650,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //구글애드몹
-                if (mInterstitialAd.isLoaded()) {
-                    mInterstitialAd.show();
-                } else {
-                    Log.d(TAG, "The interstitial wasn't loaded yet.");
-                }
+
             /*    if(bSwitch.isChecked()) {
                     voiceAsyncTask.cancel(true);
                     voiceAsyncTask = new VoiceAsyncTask();
@@ -1409,7 +1551,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
         @Override
         protected Integer doInBackground(Integer... integers) {
-            while ((isCancelled() == false) && bSwitch.isChecked() ) { //종료되거나 stop안누른경우
+            while ((isCancelled() == false) && bSwitch.isChecked()) { //종료되거나 stop안누른경우
                 publishProgress();
                 try {
                     Thread.sleep(1500);
@@ -1421,7 +1563,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-          //  Toast.makeText(getApplicationContext(), "Speak spell to the ringtone timing", Toast.LENGTH_SHORT).show();
+            //  Toast.makeText(getApplicationContext(), "Speak spell to the ringtone timing", Toast.LENGTH_SHORT).show();
             speechRecognition.startSpeechRecognition();
         }
     }
@@ -1458,10 +1600,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell11TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell11TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("Top first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1518,11 +1660,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell12TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell12TextView.setText(values[0].toString());
-                if ( values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                if (values[0].intValue() == 5) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("Top second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1578,11 +1720,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             if (values[0].intValue() <= 30) {
                 spell21TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell21TextView.setText(values[0].toString());
-                if ( values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                if (values[0].intValue() == 5) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("Jungle first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1640,11 +1782,11 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell22TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell22TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
 
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("Jungle second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1702,10 +1844,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell31TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell31TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("mid first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1763,10 +1905,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell32TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell32TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("mid second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1824,10 +1966,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell41TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell41TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("AD carry first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1885,10 +2027,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell42TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell42TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("AD carry first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -1947,10 +2089,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell51TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell51TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("Supporter first Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -2008,10 +2150,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 spell52TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell52TextView.setText(values[0].toString());
                 if (values[0].intValue() == 5) {
-                    if(aSwitch.isChecked()) {
+                    if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
-                    if(cSwitch.isChecked()) {
+                    if (cSwitch.isChecked()) {
                         tts.speak("Supporter second Spell left 5 seconds", TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -2041,7 +2183,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     protected void onDestroy() {
         super.onDestroy();
         // TTS 객체가 남아있다면 실행을 중지하고 메모리에서 제거한다.
-        if(tts != null){
+        if (tts != null) {
             tts.stop();
             tts.shutdown();
             tts = null;
