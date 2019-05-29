@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -21,14 +21,14 @@ You can learn how to use it easily by touching the rest a few times.
 "
         android:textColor="@color/textColor"
         android:textIsSelectable="true"
-        android:textSize="18dp" />
+        android:textSize="17dp" />
     <TextView
         android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/timeColor"
-        android:textSize="20dp"
+        android:textSize="17dp"
         android:text="★ I do not know why, but I need to be connected to the internet to do voice recognition better. Please do not worry about internet charges. ^^ Thank you very much.
 2019..5.28 Update: Speech recognition will be done even if you speak 'Pl' or 'fl' instead of 'Su' in the second skill. The second skill is often flash, so I added that it would be more comfortable to attach the
 Pronunciation of the flash."/>
-</ScrollView>
+</LinearLayout>
