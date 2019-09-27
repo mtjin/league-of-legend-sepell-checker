@@ -13,10 +13,10 @@ import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -31,7 +31,6 @@ import android.widget.Toast;
 
 import com.fsn.cauly.CaulyAdInfo;
 import com.fsn.cauly.CaulyAdInfoBuilder;
-import com.fsn.cauly.CaulyAdView;
 import com.fsn.cauly.CaulyCloseAd;
 import com.fsn.cauly.CaulyCloseAdListener;
 import com.fsn.cauly.CaulyInterstitialAd;
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
     //카울리광고
    private boolean showInterstitial = false;
-    private static final String APP_CODE = "FyiWuKSZ"; // 광고 요청을 위한 App Code CAULY
+    private static final String APP_CODE = "AAAAA"; // 광고 요청을 위한 App Code CAULY
     CaulyCloseAd mCloseAd ;
 
     // Back Key가 눌러졌을 때, CloseAd 호출
