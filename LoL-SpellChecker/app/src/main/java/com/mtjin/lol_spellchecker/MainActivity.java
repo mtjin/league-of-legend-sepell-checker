@@ -1,6 +1,7 @@
 package com.mtjin.lol_spellchecker;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,26 +9,26 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.fsn.cauly.CaulyAdInfo;
 import com.fsn.cauly.CaulyAdInfoBuilder;
@@ -48,21 +49,18 @@ import static android.speech.tts.TextToSpeech.ERROR;
 public class MainActivity extends AppCompatActivity implements OnSpeechRecognitionListener, OnSpeechRecognitionPermissionListener, CaulyInterstitialAdListener, CaulyCloseAdListener {
 
     //카울리광고
-   private boolean showInterstitial = false;
+    private boolean showInterstitial = false;
     private static final String APP_CODE = "AAAAA"; // 광고 요청을 위한 App Code CAULY
-    CaulyCloseAd mCloseAd ;
+    CaulyCloseAd mCloseAd;
 
     // Back Key가 눌러졌을 때, CloseAd 호출
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // 앱을 처음 설치하여 실행할 때, 필요한 리소스를 다운받았는지 여부.
-            if (mCloseAd.isModuleLoaded())
-            {
+            if (mCloseAd.isModuleLoaded()) {
                 mCloseAd.show(this);
-            }
-            else
-            {
+            } else {
                 // 광고에 필요한 리소스를 한번만  다운받는데 실패했을 때 앱의 종료팝업 구현
                 showDefaultClosePopup();
             }
@@ -71,8 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         return super.onKeyDown(keyCode, event);
     }
 
-    private void showDefaultClosePopup()
-    {
+    private void showDefaultClosePopup() {
         new AlertDialog.Builder(this).setTitle("").setMessage("종료 하시겠습니까?")
                 .setPositiveButton("예", new DialogInterface.OnClickListener() {
                     @Override
@@ -80,34 +77,39 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                         finish();
                     }
                 })
-                .setNegativeButton("아니요",null)
+                .setNegativeButton("아니요", null)
                 .show();
     }
 
     // CaulyCloseAdListener
     @Override
-    public void onFailedToReceiveCloseAd(CaulyCloseAd ad, int errCode,String errMsg) {
+    public void onFailedToReceiveCloseAd(CaulyCloseAd ad, int errCode, String errMsg) {
     }
+
     // CloseAd의 광고를 클릭하여 앱을 벗어났을 경우 호출되는 함수이다.
     @Override
     public void onLeaveCloseAd(CaulyCloseAd ad) {
     }
+
     // CloseAd의 request()를 호출했을 때, 광고의 여부를 알려주는 함수이다.
     @Override
     public void onReceiveCloseAd(CaulyCloseAd ad, boolean isChargable) {
 
     }
+
     //왼쪽 버튼을 클릭 하였을 때, 원하는 작업을 수행하면 된다.
     @Override
     public void onLeftClicked(CaulyCloseAd ad) {
 
     }
+
     //오른쪽 버튼을 클릭 하였을 때, 원하는 작업을 수행하면 된다.
     //Default로는 오른쪽 버튼이 종료로 설정되어있다.
     @Override
     public void onRightClicked(CaulyCloseAd ad) {
         finish();
     }
+
     @Override
     public void onShowedCloseAd(CaulyCloseAd ad, boolean isChargable) {
     }
@@ -149,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         // 수신된 광고가 무료 광고인 경우 isChargeableAd 값이 false 임.
         if (isChargeableAd == false) {
             Log.d("CaulyExample", "free interstitial AD received.");
-        }else {
+        } else {
             Log.d("CaulyExample", "normal interstitial AD received.");
         }
         // 노출 활성화 상태이면, 광고 노출
@@ -158,11 +160,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         else
             ad.cancel();
     }
+
     @Override
     public void onFailedToReceiveInterstitialAd(CaulyInterstitialAd ad, int errorCode, String errorMsg) {
         // 전면 광고 수신 실패할 경우 호출됨.
         Log.d("CaulyExample", "failed to receive interstitial AD.");
     }
+
     @Override
     public void onClosedInterstitialAd(CaulyInterstitialAd ad) {
         // 전면 광고가 닫힌 경우 호출됨.
@@ -190,6 +194,16 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     Switch aSwitch;
     Switch bSwitch;
     Switch cSwitch;
+    CheckBox topCheckBox5;
+    CheckBox topCheckBox10;
+    CheckBox jungleCheckBox5;
+    CheckBox jungleCheckBox10;
+    CheckBox midCheckBox5;
+    CheckBox midCheckBox10;
+    CheckBox adCheckBox5;
+    CheckBox adCheckBox10;
+    CheckBox supportCheckBox5;
+    CheckBox supportCheckBox10;
 
     Boolean isStart;
 
@@ -228,6 +242,167 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     String name42;
     String name51;
     String name52;
+
+    //스펠 시간
+    int spellTime11 = 360;
+    int spellTime12 = 300;
+    int spellTime21 = 40;
+    int spellTime22 = 300;
+    int spellTime31 = 360;
+    int spellTime32 = 300;
+    int spellTime41 = 240;
+    int spellTime42 = 300;
+    int spellTime51 = 180;
+    int spellTime52 = 300;
+
+
+
+    public void setSpellCoolTime(String spellName, int spellNum) {
+
+        int time = 0;
+        Log.d("FFFF", spellName);
+        if (spellName.equals("exhausted")) {
+            time = 210;
+        } else if (spellName.equals("flash")) {
+            time = 300;
+        } else if (spellName.equals("gangta")) {
+            time = 40;
+        } else if (spellName.equals("heal")) {
+            time = 240;
+        } else if (spellName.equals("jumhwa")) {
+            time = 180;
+        } else if (spellName.equals("junghwa")) {
+            time = 210;
+        } else if (spellName.equals("sheild")) {
+            time = 180;
+        } else if (spellName.equals("teleport")) {
+            time = 360;
+        } else if (spellName.equals("youchehwa")) {
+            time = 180;
+        }
+
+        if (spellNum == 11) {
+            if (topCheckBox10.isChecked() && topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (topCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell11AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell11TextView.setText("" + time);
+            }
+            spellTime11 = time;
+        } else if (spellNum == 12) {
+            if (topCheckBox10.isChecked() && topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (topCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell12AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell12TextView.setText("" + time);
+            }
+            spellTime12 = time;
+        } else if (spellNum == 21) {
+            if (jungleCheckBox5.isChecked() && jungleCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (jungleCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (jungleCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell21AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell21TextView.setText("" + time);
+            }
+            spellTime21 = time;
+        } else if (spellNum == 22) {
+            if (jungleCheckBox5.isChecked() && jungleCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (jungleCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (jungleCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell22AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell22TextView.setText("" + time);
+            }
+            spellTime22 = time;
+        } else if (spellNum == 31) {
+            if (midCheckBox5.isChecked() && midCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (midCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (midCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell31TextView.setText("" + time);
+            }
+            spellTime31 = time;
+        } else if (spellNum == 32) {
+            if (midCheckBox5.isChecked() && midCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (midCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (midCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell32AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell32TextView.setText("" + time);
+            }
+            spellTime32 = time;
+        } else if (spellNum == 41) {
+            if (adCheckBox5.isChecked() && adCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (adCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (adCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell41AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell41TextView.setText("" + time);
+            }
+            spellTime41 = time;
+        } else if (spellNum == 42) {
+            if (adCheckBox5.isChecked() && adCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (adCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (adCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell42AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell42TextView.setText("" + time);
+            }
+            spellTime42 = time;
+        } else if (spellNum == 51) {
+            if (supportCheckBox5.isChecked() && supportCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (supportCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (supportCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell51AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell51TextView.setText("" + time);
+            }
+            spellTime51 = time;
+        } else if (spellNum == 52) {
+            if (supportCheckBox5.isChecked() && supportCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (supportCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (supportCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            if (!(spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                spell52TextView.setText("" + time);
+            }
+            spellTime52 = time;
+        }
+    }
 
     //진동
     private Vibrator vibrator;
@@ -358,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 startActivityForResult(intent, request22);
             }
         } else if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
-                || s.trim().equals("비들") || s.trim().equals("미든") || s.trim().equals("리드") || s.trim().equals("매드")|| s.trim().equals("미래")) {
+                || s.trim().equals("비들") || s.trim().equals("미든") || s.trim().equals("리드") || s.trim().equals("매드") || s.trim().equals("미래")) {
             if (isStart) {
                 if (spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
                     spell31AsyncTask.cancel(true);
@@ -378,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         } else if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
                 || s.trim().equals("미즈") || s.trim().equals("미스") || s.trim().equals("미드쓰") || s.trim().equals("미들스") || s.trim().equals("위디스") || s.trim().equals("미드 스")
-                || s.trim().equals("미래에셋")  || s.trim().equals("미드 플")  || s.trim().equals("미드 풀")  || s.trim().equals("리플")  || s.trim().equals("미드 클")
+                || s.trim().equals("미래에셋") || s.trim().equals("미드 플") || s.trim().equals("미드 풀") || s.trim().equals("리플") || s.trim().equals("미드 클")
                 || s.trim().equals("매드피플") || s.trim().equals("이대팔")
                 || s.trim().equals("미드 8") || s.trim().equals("애플") || s.trim().equals("뷰티풀")) {
             if (isStart) {
@@ -418,12 +593,12 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                 startActivityForResult(intent, request41);
             }
         } else if (s.trim().equals("ads") || s.trim().equals("에이디스") || s.trim().equals("에디슨") || s.trim().equals("레이디스") || s.trim().equals("앨리스")
-                || s.trim().equals("azs") || s.trim().equals("에이드스")  || s.trim().equals("adpr")  || s.trim().equals("Adele")  || s.trim().equals("에듀플")
-                || s.trim().equals("데드풀")  || s.trim().equals("AD 풀") || s.trim().equals("AD 플") || s.trim().equals("애기풀")  || s.trim().equals("에이지플")
-                || s.trim().equals("엘디플")  || s.trim().equals("LG 풀")  || s.trim().equals("에듀플")  || s.trim().equals("AV 풀")  || s.trim().equals("원 데이트")
-                || s.trim().equals("원더풀")  || s.trim().equals("언제 풀")  || s.trim().equals("원딜 풀")  || s.trim().equals("원 대패")  || s.trim().equals("원재필")
-                || s.trim().equals("언제 풀")  || s.trim().equals("원 들풀")  || s.trim().equals("원주 애플")  || s.trim().equals("원들 풀") || s.trim().equals("애니 클")
-                || s.trim().equals("애니플") || s.trim().equals("돼지풀")  || s.trim().equals("원 제클") ) {
+                || s.trim().equals("azs") || s.trim().equals("에이드스") || s.trim().equals("adpr") || s.trim().equals("Adele") || s.trim().equals("에듀플")
+                || s.trim().equals("데드풀") || s.trim().equals("AD 풀") || s.trim().equals("AD 플") || s.trim().equals("애기풀") || s.trim().equals("에이지플")
+                || s.trim().equals("엘디플") || s.trim().equals("LG 풀") || s.trim().equals("에듀플") || s.trim().equals("AV 풀") || s.trim().equals("원 데이트")
+                || s.trim().equals("원더풀") || s.trim().equals("언제 풀") || s.trim().equals("원딜 풀") || s.trim().equals("원 대패") || s.trim().equals("원재필")
+                || s.trim().equals("언제 풀") || s.trim().equals("원 들풀") || s.trim().equals("원주 애플") || s.trim().equals("원들 풀") || s.trim().equals("애니 클")
+                || s.trim().equals("애니플") || s.trim().equals("돼지풀") || s.trim().equals("원 제클")) {
 
             if (isStart) {
                 if (spell42AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
@@ -462,8 +637,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         } else if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스") || s.trim().equals("써포터스")
                 || s.trim().equals("supports") || s.trim().equals("supporters") || s.trim().equals("서퍼스") || s.trim().equals("서폿스") || s.trim().equals("소프트하우스")
-                || s.trim().equals("서커스") || s.trim().equals("써플")  || s.trim().equals("서플")  || s.trim().equals("서커스")  || s.trim().equals("서커스")
-                || s.trim().equals("서포터 풀")  || s.trim().equals("버터플")  || s.trim().equals("서포터 펜")  || s.trim().equals("스포탑 펫")  || s.trim().equals("서포터 어플")
+                || s.trim().equals("서커스") || s.trim().equals("써플") || s.trim().equals("서플") || s.trim().equals("서커스") || s.trim().equals("서커스")
+                || s.trim().equals("서포터 풀") || s.trim().equals("버터플") || s.trim().equals("서포터 펜") || s.trim().equals("스포탑 펫") || s.trim().equals("서포터 어플")
                 || s.trim().equals("서포터 호텔")) {
             if (isStart) {
                 if (spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
@@ -531,7 +706,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         mCloseAd.setAdInfo(closeAdInfo);
         mCloseAd.setCloseAdListener(this); // CaulyCloseAdListener 등록
         // 종료광고 노출 후 back버튼 사용을 막기 원할 경우 disableBackKey();을 추가한다
-         mCloseAd.disableBackKey();
+        mCloseAd.disableBackKey();
 
         //음성인식
         mIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -570,6 +745,17 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         aSwitch = findViewById(R.id.switch1);
         bSwitch = findViewById(R.id.switch2);
         cSwitch = findViewById(R.id.switch3);
+        topCheckBox5 = findViewById(R.id.top_cool_5);
+        topCheckBox10 = findViewById(R.id.top_cool_10);
+        jungleCheckBox5 = findViewById(R.id.jungle_cool_5);
+        jungleCheckBox10 = findViewById(R.id.jungle_cool_10);
+        midCheckBox5 = findViewById(R.id.mid_cool_5);
+        midCheckBox10 = findViewById(R.id.mid_cool_10);
+        adCheckBox5 = findViewById(R.id.ad_cool_5);
+        adCheckBox10 = findViewById(R.id.ad_cool_10);
+        supportCheckBox5 = findViewById(R.id.support_cool_5);
+        supportCheckBox10 = findViewById(R.id.support_cool_10);
+
         //진동
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         //보이스스위치
@@ -616,24 +802,6 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, UsageDialogActivity.class);
                 startActivity(intent);
-               /* final CharSequence[] usageModels = {"한국말 사용법", "ENGLISH USAGE"};
-                AlertDialog.Builder alt_bld = new AlertDialog.Builder(getApplicationContext());
-                //alt_bld.setIcon(R.drawable.icon);
-                alt_bld.setTitle("사용법 USAGE");
-                alt_bld.setSingleChoiceItems(usageModels, -1, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int item) {
-                        Toast.makeText(MainActivity.this, usageModels[item] + "가 선택되었습니다.", Toast.LENGTH_SHORT).show();
-                        if (item == 0) {
-                            Intent intent = new Intent(MainActivity.this, UsageActivity.class);
-                            startActivity(intent);
-                        } else if (item == 1) {
-                            Intent intent = new Intent(MainActivity.this, Usage2Activity.class);
-                            startActivity(intent);
-                        }
-                    }
-                });
-                AlertDialog alert = alt_bld.create();
-                alert.show();*/
             }
         });
 
@@ -645,18 +813,82 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             }
         });
 
+        //쿨감 리스너
+        topCheckBox5.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name11, 11);
+                setSpellCoolTime(name12, 12);
+            }
+        });
+        topCheckBox10.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name11, 11);
+                setSpellCoolTime(name12, 12);
+            }
+        });
+        jungleCheckBox5.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name21, 21);
+                setSpellCoolTime(name22, 22);
+            }
+        });
+        jungleCheckBox10.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name21, 21);
+                setSpellCoolTime(name22, 22);
+            }
+        });
+        midCheckBox5.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name31, 31);
+                setSpellCoolTime(name32, 32);
+            }
+        });
+        midCheckBox10.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name31, 31);
+                setSpellCoolTime(name32, 32);
+            }
+        });
+        adCheckBox5.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name41, 41);
+                setSpellCoolTime(name42, 42);
+            }
+        });
+        adCheckBox10.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name41, 41);
+                setSpellCoolTime(name42, 42);
+            }
+        });
+        supportCheckBox5.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name51, 51);
+                setSpellCoolTime(name52, 52);
+            }
+        });
+        supportCheckBox10.setOnClickListener(new CheckBox.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setSpellCoolTime(name51, 51);
+                setSpellCoolTime(name52, 52);
+            }
+        });
+
         //시작버튼
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-            /*    if(bSwitch.isChecked()) {
-                    voiceAsyncTask.cancel(true);
-                    voiceAsyncTask = new VoiceAsyncTask();
-                    voiceAsyncTask.executeOnExecutor(threadPool);
-                }else{
-                    voiceAsyncTask.cancel(true);
-                }*/
 
                 if (!isStart) { //시작
                     isStart = true;
@@ -931,52 +1163,132 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         if (requestCode == request11 && resultCode == RESULT_OK) {
             name11 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (topCheckBox10.isChecked() && topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (topCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime11 = time;
             spell11TextView.setText(time + "");
             setSpellImage(request11, name11, true);
         } else if (requestCode == request12 && resultCode == RESULT_OK) {
             Log.d(TAG, "스펠12 결과통과");
             name12 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (topCheckBox10.isChecked() && topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (topCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (topCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime12 = time;
             spell12TextView.setText(time + "");
             setSpellImage(request12, name12, true);
         } else if (requestCode == request21 && resultCode == RESULT_OK) {
             name21 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (jungleCheckBox10.isChecked() && jungleCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (jungleCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (jungleCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime21 = time;
             spell21TextView.setText(time + "");
             setSpellImage(request21, name21, true);
         } else if (requestCode == request22 && resultCode == RESULT_OK) {
             name22 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (jungleCheckBox10.isChecked() && jungleCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (jungleCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (jungleCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime22 = time;
             spell22TextView.setText(time + "");
             setSpellImage(request22, name22, true);
         } else if (requestCode == request31 && resultCode == RESULT_OK) {
             name31 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (midCheckBox10.isChecked() && midCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (midCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (midCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime31 = time;
             spell31TextView.setText(time + "");
             setSpellImage(request31, name31, true);
         } else if (requestCode == request32 && resultCode == RESULT_OK) {
             name32 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (midCheckBox10.isChecked() && midCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (midCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (midCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime32 = time;
             spell32TextView.setText(time + "");
             setSpellImage(request32, name32, true);
         } else if (requestCode == request41 && resultCode == RESULT_OK) {
             name41 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (adCheckBox10.isChecked() && adCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (adCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (adCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime41 = time;
             spell41TextView.setText(time + "");
             setSpellImage(request41, name41, true);
         } else if (requestCode == request42 && resultCode == RESULT_OK) {
             name42 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (adCheckBox10.isChecked() && adCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (adCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (adCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime42 = time;
             spell42TextView.setText(time + "");
             setSpellImage(request42, name42, true);
         } else if (requestCode == request51 && resultCode == RESULT_OK) {
             name51 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (supportCheckBox10.isChecked() && supportCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (supportCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (supportCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime51 = time;
             spell51TextView.setText(time + "");
             setSpellImage(request51, name51, true);
         } else if (requestCode == request52 && resultCode == RESULT_OK) {
             name52 = data.getExtras().getString("name");
             time = data.getExtras().getInt("time");
+            if (supportCheckBox10.isChecked() && supportCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 85);
+            } else if (supportCheckBox5.isChecked()) {
+                time = (int) (time / (double) 100 * 95);
+            } else if (supportCheckBox10.isChecked()) {
+                time = (int) (time / (double) 100 * 90);
+            }
+            spellTime52 = time;
             spell52TextView.setText(time + "");
             setSpellImage(request52, name52, true);
         }
@@ -1548,6 +1860,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
     public class VoiceAsyncTask extends AsyncTask<Integer, Integer, Integer> {
 
+        @SuppressLint("WrongThread")
         @Override
         protected Integer doInBackground(Integer... integers) {
             while ((isCancelled() == false) && bSwitch.isChecked()) { //종료되거나 stop안누른경우
@@ -1615,14 +1928,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell11TextView.setTextColor(Color.parseColor("#000000"));
-            spell11TextView.setText(originalTIme + "");
+            spell11TextView.setText("" + spellTime11);
             setSpellImage(request11, name11, true);
         }
 
         @Override
         protected void onCancelled() {
             spell11TextView.setTextColor(Color.parseColor("#000000"));
-            spell11TextView.setText(originalTIme + "");
+            spell11TextView.setText("" + spellTime11);
             setSpellImage(request11, name11, true);
         }
 
@@ -1676,14 +1989,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell12TextView.setTextColor(Color.parseColor("#000000"));
-            spell12TextView.setText(originalTIme + "");
+            spell12TextView.setText(spellTime12 + "");
             setSpellImage(request12, name12, true);
         }
 
         @Override
         protected void onCancelled() {
             spell12TextView.setTextColor(Color.parseColor("#000000"));
-            spell12TextView.setText(originalTIme + "");
+            spell12TextView.setText(spellTime12 + "");
             setSpellImage(request12, name12, true);
         }
 
@@ -1736,14 +2049,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell21TextView.setTextColor(Color.parseColor("#000000"));
-            spell21TextView.setText(originalTIme + "");
+            spell21TextView.setText(spellTime21 + "");
             setSpellImage(request21, name21, true);
         }
 
         @Override
         protected void onCancelled() {
             spell21TextView.setTextColor(Color.parseColor("#000000"));
-            spell21TextView.setText(originalTIme + "");
+            spell21TextView.setText(spellTime21 + "");
             setSpellImage(request21, name21, true);
         }
 
@@ -1798,14 +2111,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell22TextView.setTextColor(Color.parseColor("#000000"));
-            spell22TextView.setText(originalTIme + "");
+            spell22TextView.setText(spellTime22 + "");
             setSpellImage(request22, name22, true);
         }
 
         @Override
         protected void onCancelled() {
             spell22TextView.setTextColor(Color.parseColor("#000000"));
-            spell22TextView.setText(originalTIme + "");
+            spell22TextView.setText(spellTime22 + "");
             setSpellImage(request22, name22, true);
         }
 
@@ -1859,14 +2172,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell31TextView.setTextColor(Color.parseColor("#000000"));
-            spell31TextView.setText(originalTIme + "");
+            spell31TextView.setText(spellTime31 + "");
             setSpellImage(request31, name31, true);
         }
 
         @Override
         protected void onCancelled() {
             spell31TextView.setTextColor(Color.parseColor("#000000"));
-            spell31TextView.setText(originalTIme + "");
+            spell31TextView.setText(spellTime31 + "");
             setSpellImage(request31, name31, true);
         }
 
@@ -1920,14 +2233,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell32TextView.setTextColor(Color.parseColor("#000000"));
-            spell32TextView.setText(originalTIme + "");
+            spell32TextView.setText(spellTime32 + "");
             setSpellImage(request32, name32, true);
         }
 
         @Override
         protected void onCancelled() {
             spell32TextView.setTextColor(Color.parseColor("#000000"));
-            spell32TextView.setText(originalTIme + "");
+            spell32TextView.setText(spellTime32 + "");
             setSpellImage(request32, name32, true);
         }
 
@@ -1981,14 +2294,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell41TextView.setTextColor(Color.parseColor("#000000"));
-            spell41TextView.setText(originalTIme + "");
+            spell41TextView.setText(spellTime41 + "");
             setSpellImage(request41, name41, true);
         }
 
         @Override
         protected void onCancelled() {
             spell41TextView.setTextColor(Color.parseColor("#000000"));
-            spell41TextView.setText(originalTIme + "");
+            spell41TextView.setText(spellTime41 + "");
             setSpellImage(request41, name41, true);
         }
 
@@ -2043,14 +2356,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell42TextView.setTextColor(Color.parseColor("#000000"));
-            spell42TextView.setText(originalTIme + "");
+            spell42TextView.setText(spellTime42 + "");
             setSpellImage(request42, name42, true);
         }
 
         @Override
         protected void onCancelled() {
             spell42TextView.setTextColor(Color.parseColor("#000000"));
-            spell42TextView.setText(originalTIme + "");
+            spell42TextView.setText(spellTime42 + "");
             setSpellImage(request42, name42, true);
         }
 
@@ -2104,14 +2417,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell51TextView.setTextColor(Color.parseColor("#000000"));
-            spell51TextView.setText(originalTIme + "");
+            spell51TextView.setText(spellTime51 + "");
             setSpellImage(request51, name51, true);
         }
 
         @Override
         protected void onCancelled() {
             spell51TextView.setTextColor(Color.parseColor("#000000"));
-            spell51TextView.setText(originalTIme + "");
+            spell51TextView.setText(spellTime51 + "");
             setSpellImage(request51, name51, true);
         }
 
@@ -2165,14 +2478,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         @Override
         protected void onPostExecute(Integer integer) {
             spell52TextView.setTextColor(Color.parseColor("#000000"));
-            spell52TextView.setText(originalTIme + "");
+            spell52TextView.setText(spellTime52 + "");
             setSpellImage(request52, name52, true);
         }
 
         @Override
         protected void onCancelled() {
             spell52TextView.setTextColor(Color.parseColor("#000000"));
-            spell52TextView.setText(originalTIme + "");
+            spell52TextView.setText(spellTime52 + "");
             setSpellImage(request52, name52, true);
         }
 
