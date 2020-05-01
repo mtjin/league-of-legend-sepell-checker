@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -149,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     public void onReceiveInterstitialAd(CaulyInterstitialAd ad, boolean isChargeableAd) {
         // 광고 수신 성공한 경우 호출됨.
         // 수신된 광고가 무료 광고인 경우 isChargeableAd 값이 false 임.
-        if (isChargeableAd == false) {
+        if (!isChargeableAd) {
             Log.d("CaulyExample", "free interstitial AD received.");
         } else {
             Log.d("CaulyExample", "normal interstitial AD received.");
@@ -448,213 +449,219 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         Log.d(TAG, "음성라이브러리 OnSpeechRecognitionStopped");
     }
 
+    //중복 클릭 방지 시간 설정 ( 해당 시간 이후에 다시 클릭 가능 )
+    private static final long MIN_CLICK_INTERVAL = 600;
+    private long mLastClickTime = 0;
     @Override
     public void OnSpeechRecognitionFinalResult(String s) {
-        Log.d(TAG, "OnSpeechRecognitionFinalResult:        " + s);
-        if (s.trim().equals("탑") || s.trim().equals("타압") || s.trim().equals("탓") || s.trim().equals("팝") || s.trim().equals("탁") || s.trim().equals("탐")
-                || s.trim().equals("답") || s.trim().equals("닭") || s.trim().equals("덫") | s.trim().equals("밥") || s.trim().equals("다")
-                || s.trim().equals("타") || s.trim().equals("박")) {
-            if (isStart) {
-                if (spell11AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell11AsyncTask.cancel(true);
-                    spell11AsyncTask = new Spell11AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell11AsyncTask = new Spell11AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        long currentClickTime = SystemClock.uptimeMillis();
+        long elapsedTime = currentClickTime - mLastClickTime;
+        mLastClickTime = currentClickTime;
+
+        // 중복클릭 아닌 경우
+        if (elapsedTime > MIN_CLICK_INTERVAL) {
+            Log.d(TAG, "OnSpeechRecognitionFinalResult:        " + s);
+            if (s.trim().equals("탑") || s.trim().equals("타압") || s.trim().equals("탓") || s.trim().equals("팝") || s.trim().equals("탁") || s.trim().equals("탐")
+                    || s.trim().equals("답") || s.trim().equals("닭") || s.trim().equals("덫") | s.trim().equals("밥") || s.trim().equals("다")
+                    || s.trim().equals("타") || s.trim().equals("박")) {
+                if (isStart) {
+                    if (spell11AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell11AsyncTask.cancel(true);
+                        spell11AsyncTask = new Spell11AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell11AsyncTask = new Spell11AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
                         spell11AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell11TextView.getText().toString().trim()));
-                    } else {
-                        spell11AsyncTask.execute(Integer.valueOf(spell11TextView.getText().toString().trim()));
                     }
-                }
-            } else {
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request11);
-            }
-        } else if (s.trim().equals("탑스") || s.trim().equals("타압스") || s.trim().equals("탓스") || s.trim().equals("팝스") || s.trim().equals("탁스") || s.trim().equals("탐스") || s.trim().equals("답스")
-                || s.trim().equals("탑쓰") || s.trim().equals("타압쓰") || s.trim().equals("탓쓰") || s.trim().equals("팝쓰") || s.trim().equals("탁쓰") || s.trim().equals("탐쓰") || s.trim().equals("답쓰")
-                || s.trim().equals("닥쓰") || s.trim().equals("닥스") || s.trim().equals("다스") || s.trim().equals("박세") || s.trim().equals("잡스") || s.trim().equals("다시")
-                | s.trim().equals("탑플") | s.trim().equals("닥플") | s.trim().equals("타플") | s.trim().equals("터틀")) {
-            if (isStart) {
-                if (spell12AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell12AsyncTask.cancel(true);
-                    spell12AsyncTask = new Spell12AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell12AsyncTask = new Spell12AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell12AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell12TextView.getText().toString().trim()));
-                    } else {
-                        spell12AsyncTask.execute(Integer.valueOf(spell12TextView.getText().toString().trim()));
-                    }
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request11);
                 }
-            } else {
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request12);
-            }
-        } else if (s.trim().equals("정글") || s.trim().equals("전글") || s.trim().equals("정클") || s.trim().equals("점글") || s.trim().equals("정그")
-                || s.trim().equals("정걸") || s.trim().equals("전걸") || s.trim().equals("전갈") || s.trim().equals("전골")) {
-            if (isStart) {
-                if (spell21AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell21AsyncTask.cancel(true);
-                    spell21AsyncTask = new Spell21AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell21AsyncTask = new Spell21AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell21AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell21TextView.getText().toString().trim()));
+            } else if (s.trim().equals("탑스") || s.trim().equals("타압스") || s.trim().equals("탓스") || s.trim().equals("팝스") || s.trim().equals("탁스") || s.trim().equals("탐스") || s.trim().equals("답스")
+                    || s.trim().equals("탑쓰") || s.trim().equals("타압쓰") || s.trim().equals("탓쓰") || s.trim().equals("팝쓰") || s.trim().equals("탁쓰") || s.trim().equals("탐쓰") || s.trim().equals("답쓰")
+                    || s.trim().equals("닥쓰") || s.trim().equals("닥스") || s.trim().equals("다스") || s.trim().equals("박세") || s.trim().equals("잡스") || s.trim().equals("다시")
+                    | s.trim().equals("탑플") | s.trim().equals("닥플") | s.trim().equals("타플") | s.trim().equals("터틀")) {
+                if (isStart) {
+                    if (spell12AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell12AsyncTask.cancel(true);
+                        spell12AsyncTask = new Spell12AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
                     } else {
-                        spell21AsyncTask.execute(Integer.valueOf(spell21TextView.getText().toString().trim()));
+                        spell12AsyncTask = new Spell12AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell12AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell12TextView.getText().toString().trim()));
+                        } else {
+                            spell12AsyncTask.execute(Integer.valueOf(spell12TextView.getText().toString().trim()));
+                        }
                     }
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request12);
                 }
-            } else {
+            } else if (s.trim().equals("정글") || s.trim().equals("전글") || s.trim().equals("정클") || s.trim().equals("점글") || s.trim().equals("정그")
+                    || s.trim().equals("정걸") || s.trim().equals("전걸") || s.trim().equals("전갈") || s.trim().equals("전골")) {
+                if (isStart) {
+                    if (spell21AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell21AsyncTask.cancel(true);
+                        spell21AsyncTask = new Spell21AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell21AsyncTask = new Spell21AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell21AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell21TextView.getText().toString().trim()));
+                        } else {
+                            spell21AsyncTask.execute(Integer.valueOf(spell21TextView.getText().toString().trim()));
+                        }
+                    }
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request21);
-            }
-        } else if (s.trim().equals("정글스") || s.trim().equals("전글스") || s.trim().equals("정클스") || s.trim().equals("점글스") || s.trim().equals("정그스")
-                || s.trim().equals("정걸스") || s.trim().equals("전걸스") || s.trim().equals("정글s") || s.trim().equals("정글 s") || s.trim().equals("전 결승")
-                || s.trim().equals("전결승") || s.trim().equals("잠금 어플") || s.trim().equals("정글 풀") || s.trim().equals("정 베풀") || s.trim().equals("정 급해")
-                || s.trim().equals("정글 파일") || s.trim().equals("정글 플") || s.trim().equals("정갑철") || s.trim().equals("정글 클") || s.trim().equals("정 베플")
-                || s.trim().equals("정글펫")) {
-            if (isStart) {
-                if (spell22AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell22AsyncTask.cancel(true);
-                    spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell22AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell22TextView.getText().toString().trim()));
-                    } else {
-                        spell22AsyncTask.execute(Integer.valueOf(spell22TextView.getText().toString().trim()));
-                    }
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request21);
                 }
-            } else {
+            } else if (s.trim().equals("정글스") || s.trim().equals("전글스") || s.trim().equals("정클스") || s.trim().equals("점글스") || s.trim().equals("정그스")
+                    || s.trim().equals("정걸스") || s.trim().equals("전걸스") || s.trim().equals("정글s") || s.trim().equals("정글 s") || s.trim().equals("전 결승")
+                    || s.trim().equals("전결승") || s.trim().equals("잠금 어플") || s.trim().equals("정글 풀") || s.trim().equals("정 베풀") || s.trim().equals("정 급해")
+                    || s.trim().equals("정글 파일") || s.trim().equals("정글 플") || s.trim().equals("정갑철") || s.trim().equals("정글 클") || s.trim().equals("정 베플")
+                    || s.trim().equals("정글펫")) {
+                if (isStart) {
+                    if (spell22AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell22AsyncTask.cancel(true);
+                        spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell22AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell22TextView.getText().toString().trim()));
+                        } else {
+                            spell22AsyncTask.execute(Integer.valueOf(spell22TextView.getText().toString().trim()));
+                        }
+                    }
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request22);
-            }
-        } else if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
-                || s.trim().equals("비들") || s.trim().equals("미든") || s.trim().equals("리드") || s.trim().equals("매드") || s.trim().equals("미래")) {
-            if (isStart) {
-                if (spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell31AsyncTask.cancel(true);
-                    spell31AsyncTask = new Spell31AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell31AsyncTask = new Spell31AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell31AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell31TextView.getText().toString().trim()));
-                    } else {
-                        spell31AsyncTask.execute(Integer.valueOf(spell31TextView.getText().toString().trim()));
-                    }
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request22);
                 }
-            } else {
+            } else if (s.trim().equals("미드") || s.trim().equals("미들") || s.trim().equals("미드을") || s.trim().equals("미덜") || s.trim().equals("미딜")
+                    || s.trim().equals("비들") || s.trim().equals("미든") || s.trim().equals("리드") || s.trim().equals("매드") || s.trim().equals("미래")) {
+                if (isStart) {
+                    if (spell31AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell31AsyncTask.cancel(true);
+                        spell31AsyncTask = new Spell31AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell31AsyncTask = new Spell31AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell31AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell31TextView.getText().toString().trim()));
+                        } else {
+                            spell31AsyncTask.execute(Integer.valueOf(spell31TextView.getText().toString().trim()));
+                        }
+                    }
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request31);
-            }
-        } else if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
-                || s.trim().equals("미즈") || s.trim().equals("미스") || s.trim().equals("미드쓰") || s.trim().equals("미들스") || s.trim().equals("위디스") || s.trim().equals("미드 스")
-                || s.trim().equals("미래에셋") || s.trim().equals("미드 플") || s.trim().equals("미드 풀") || s.trim().equals("리플") || s.trim().equals("미드 클")
-                || s.trim().equals("매드피플") || s.trim().equals("이대팔")
-                || s.trim().equals("미드 8") || s.trim().equals("애플") || s.trim().equals("뷰티풀")) {
-            if (isStart) {
-                if (spell32AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell32AsyncTask.cancel(true);
-                    spell32AsyncTask = new Spell32AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell32AsyncTask = new Spell32AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell32AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell32TextView.getText().toString().trim()));
-                    } else {
-                        spell32AsyncTask.execute(Integer.valueOf(spell32TextView.getText().toString().trim()));
-                    }
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request31);
                 }
-            } else {
+            } else if (s.trim().equals("미드스") || s.trim().equals("이글스") || s.trim().equals("위더스") || s.trim().equals("리더스") || s.trim().equals("미디어스")
+                    || s.trim().equals("미즈") || s.trim().equals("미스") || s.trim().equals("미드쓰") || s.trim().equals("미들스") || s.trim().equals("위디스") || s.trim().equals("미드 스")
+                    || s.trim().equals("미래에셋") || s.trim().equals("미드 플") || s.trim().equals("미드 풀") || s.trim().equals("리플") || s.trim().equals("미드 클")
+                    || s.trim().equals("매드피플") || s.trim().equals("이대팔")
+                    || s.trim().equals("미드 8") || s.trim().equals("애플") || s.trim().equals("뷰티풀")) {
+                if (isStart) {
+                    if (spell32AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell32AsyncTask.cancel(true);
+                        spell32AsyncTask = new Spell32AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell32AsyncTask = new Spell32AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell32AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell32TextView.getText().toString().trim()));
+                        } else {
+                            spell32AsyncTask.execute(Integer.valueOf(spell32TextView.getText().toString().trim()));
+                        }
+                    }
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request32);
-            }
-        } else if (s.trim().equals("ad") || s.trim().equals("ag") || s.trim().equals("에이디") || s.trim().equals("에디") || s.trim().equals("애이디")
-                || s.trim().equals("az") || s.trim().equals("에이드")) {
-            if (isStart) {
-                if (spell41AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell41AsyncTask.cancel(true);
-                    spell41AsyncTask = new Spell41AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell41AsyncTask = new Spell41AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell41AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell41TextView.getText().toString().trim()));
-                    } else {
-                        spell41AsyncTask.execute(Integer.valueOf(spell41TextView.getText().toString().trim()));
-                    }
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request32);
                 }
-            } else {
+            } else if (s.trim().equals("ad") || s.trim().equals("ag") || s.trim().equals("에이디") || s.trim().equals("에디") || s.trim().equals("애이디")
+                    || s.trim().equals("az") || s.trim().equals("에이드")) {
+                if (isStart) {
+                    if (spell41AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell41AsyncTask.cancel(true);
+                        spell41AsyncTask = new Spell41AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell41AsyncTask = new Spell41AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell41AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell41TextView.getText().toString().trim()));
+                        } else {
+                            spell41AsyncTask.execute(Integer.valueOf(spell41TextView.getText().toString().trim()));
+                        }
+                    }
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request41);
-            }
-        } else if (s.trim().equals("ads") || s.trim().equals("에이디스") || s.trim().equals("에디슨") || s.trim().equals("레이디스") || s.trim().equals("앨리스")
-                || s.trim().equals("azs") || s.trim().equals("에이드스") || s.trim().equals("adpr") || s.trim().equals("Adele") || s.trim().equals("에듀플")
-                || s.trim().equals("데드풀") || s.trim().equals("AD 풀") || s.trim().equals("AD 플") || s.trim().equals("애기풀") || s.trim().equals("에이지플")
-                || s.trim().equals("엘디플") || s.trim().equals("LG 풀") || s.trim().equals("에듀플") || s.trim().equals("AV 풀") || s.trim().equals("원 데이트")
-                || s.trim().equals("원더풀") || s.trim().equals("언제 풀") || s.trim().equals("원딜 풀") || s.trim().equals("원 대패") || s.trim().equals("원재필")
-                || s.trim().equals("언제 풀") || s.trim().equals("원 들풀") || s.trim().equals("원주 애플") || s.trim().equals("원들 풀") || s.trim().equals("애니 클")
-                || s.trim().equals("애니플") || s.trim().equals("돼지풀") || s.trim().equals("원 제클")) {
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request41);
+                }
+            } else if (s.trim().equals("ads") || s.trim().equals("에이디스") || s.trim().equals("에디슨") || s.trim().equals("레이디스") || s.trim().equals("앨리스")
+                    || s.trim().equals("azs") || s.trim().equals("에이드스") || s.trim().equals("adpr") || s.trim().equals("Adele") || s.trim().equals("에듀플")
+                    || s.trim().equals("데드풀") || s.trim().equals("AD 풀") || s.trim().equals("AD 플") || s.trim().equals("애기풀") || s.trim().equals("에이지플")
+                    || s.trim().equals("엘디플") || s.trim().equals("LG 풀") || s.trim().equals("에듀플") || s.trim().equals("AV 풀") || s.trim().equals("원 데이트")
+                    || s.trim().equals("원더풀") || s.trim().equals("언제 풀") || s.trim().equals("원딜 풀") || s.trim().equals("원 대패") || s.trim().equals("원재필")
+                    || s.trim().equals("언제 풀") || s.trim().equals("원 들풀") || s.trim().equals("원주 애플") || s.trim().equals("원들 풀") || s.trim().equals("애니 클")
+                    || s.trim().equals("애니플") || s.trim().equals("돼지풀") || s.trim().equals("원 제클")) {
 
-            if (isStart) {
-                if (spell42AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell42AsyncTask.cancel(true);
-                    spell42AsyncTask = new Spell42AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell42AsyncTask = new Spell42AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell42AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell42TextView.getText().toString().trim()));
+                if (isStart) {
+                    if (spell42AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell42AsyncTask.cancel(true);
+                        spell42AsyncTask = new Spell42AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
                     } else {
-                        spell42AsyncTask.execute(Integer.valueOf(spell42TextView.getText().toString().trim()));
+                        spell42AsyncTask = new Spell42AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell42AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell42TextView.getText().toString().trim()));
+                        } else {
+                            spell42AsyncTask.execute(Integer.valueOf(spell42TextView.getText().toString().trim()));
+                        }
                     }
-                }
-            } else {
+                } else {
 
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request42);
-            }
-        } else if (s.trim().equals("서포터") || s.trim().equals("섯포터") || s.trim().equals("서포털") || s.trim().equals("스퍼터") || s.trim().equals("써포터")
-                || s.trim().equals("support") || s.trim().equals("supporter") || s.trim().equals("서폿") || s.trim().equals("Super") || s.trim().equals("super") || s.trim().equals("수퍼")) {
-            if (isStart) {
-                if (spell51AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell51AsyncTask.cancel(true);
-                    spell51AsyncTask = new Spell51AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell51AsyncTask = new Spell51AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell51AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell51TextView.getText().toString().trim()));
-                    } else {
-                        spell51AsyncTask.execute(Integer.valueOf(spell51TextView.getText().toString().trim()));
-                    }
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request42);
                 }
-            } else {
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request51);
-            }
-        } else if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스") || s.trim().equals("써포터스")
-                || s.trim().equals("supports") || s.trim().equals("supporters") || s.trim().equals("서퍼스") || s.trim().equals("서폿스") || s.trim().equals("소프트하우스")
-                || s.trim().equals("서커스") || s.trim().equals("써플") || s.trim().equals("서플") || s.trim().equals("서커스") || s.trim().equals("서커스")
-                || s.trim().equals("서포터 풀") || s.trim().equals("버터플") || s.trim().equals("서포터 펜") || s.trim().equals("스포탑 펫") || s.trim().equals("서포터 어플")
-                || s.trim().equals("서포터 호텔")) {
-            if (isStart) {
-                if (spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
-                    spell52AsyncTask.cancel(true);
-                    spell52AsyncTask = new Spell52AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                } else {
-                    spell52AsyncTask = new Spell52AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        spell52AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell52TextView.getText().toString().trim()));
+            } else if (s.trim().equals("서포터") || s.trim().equals("섯포터") || s.trim().equals("서포털") || s.trim().equals("스퍼터") || s.trim().equals("써포터")
+                    || s.trim().equals("support") || s.trim().equals("supporter") || s.trim().equals("서폿") || s.trim().equals("Super") || s.trim().equals("super") || s.trim().equals("수퍼")) {
+                if (isStart) {
+                    if (spell51AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell51AsyncTask.cancel(true);
+                        spell51AsyncTask = new Spell51AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
                     } else {
-                        spell52AsyncTask.execute(Integer.valueOf(spell52TextView.getText().toString().trim()));
+                        spell51AsyncTask = new Spell51AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell51AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell51TextView.getText().toString().trim()));
+                        } else {
+                            spell51AsyncTask.execute(Integer.valueOf(spell51TextView.getText().toString().trim()));
+                        }
                     }
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request51);
                 }
-            } else {
-                Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
-                startActivityForResult(intent, request52);
+            } else if (s.trim().equals("서포터스") || s.trim().equals("섯포터스") || s.trim().equals("서포털스") || s.trim().equals("스퍼터스") || s.trim().equals("써포터스")
+                    || s.trim().equals("supports") || s.trim().equals("supporters") || s.trim().equals("서퍼스") || s.trim().equals("서폿스") || s.trim().equals("소프트하우스")
+                    || s.trim().equals("서커스") || s.trim().equals("써플") || s.trim().equals("서플") || s.trim().equals("서커스") || s.trim().equals("서커스")
+                    || s.trim().equals("서포터 풀") || s.trim().equals("버터플") || s.trim().equals("서포터 펜") || s.trim().equals("스포탑 펫") || s.trim().equals("서포터 어플")
+                    || s.trim().equals("서포터 호텔")) {
+                if (isStart) {
+                    if (spell52AsyncTask.getStatus() == AsyncTask.Status.RUNNING) { //이미 실행중인게있으면 종료 후 새스레드 생성
+                        spell52AsyncTask.cancel(true);
+                        spell52AsyncTask = new Spell52AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                    } else {
+                        spell52AsyncTask = new Spell52AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            spell52AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell52TextView.getText().toString().trim()));
+                        } else {
+                            spell52AsyncTask.execute(Integer.valueOf(spell52TextView.getText().toString().trim()));
+                        }
+                    }
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), DialogActivity.class);
+                    startActivityForResult(intent, request52);
+                }
             }
         }
     }
