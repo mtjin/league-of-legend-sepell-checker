@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
     //카울리광고
     private boolean showInterstitial = false;
-    private static final String APP_CODE = "AAAAA"; // 광고 요청을 위한 App Code CAULY
+    private static final String APP_CODE = "FyiWuKSZ"; // 광고 요청을 위한 App Code CAULY
     CaulyCloseAd mCloseAd;
 
     // Back Key가 눌러졌을 때, CloseAd 호출
