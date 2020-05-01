@@ -257,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     int spellTime52 = 300;
 
 
+
     public void setSpellCoolTime(String spellName, int spellNum) {
 
         int time = 0;
@@ -451,7 +452,6 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     //중복 클릭 방지 시간 설정 ( 해당 시간 이후에 다시 클릭 가능 )
     private static final long MIN_CLICK_INTERVAL = 600;
     private long mLastClickTime = 0;
-
     @Override
     public void OnSpeechRecognitionFinalResult(String s) {
         long currentClickTime = SystemClock.uptimeMillis();
@@ -694,13 +694,10 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //화면 안꺼지게하기
 
         //음성인식 퍼미션
-        // 퍼미션 체크
-        if (Build.VERSION.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= 23) {
+            // 퍼미션 체크
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
                     Manifest.permission.RECORD_AUDIO, Manifest.permission.VIBRATE}, PERMISSION);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
-                    Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
 
         //CloseAd 초기화

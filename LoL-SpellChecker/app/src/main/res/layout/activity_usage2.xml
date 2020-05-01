@@ -31,4 +31,11 @@ You can learn how to use it easily by touching the rest a few times.
         android:text="★ I do not know why, but I need to be connected to the internet to do voice recognition better. Please do not worry about internet charges. ^^ Thank you very much.
 2019..5.28 Update: Speech recognition will be done even if you speak 'Pl' or 'fl' instead of 'Su' in the second skill. The second skill is often flash, so I added that it would be more comfortable to attach the
 Pronunciation of the flash."/>
+    <TextView
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#3F51B5"
+        android:textSize="17dp"
+        android:text="2020.04 ~ 05 5%, 10% item reduce spell can be added. In fact, vibrations can now be supported on mobile. Good ratings and comments are good to me. Thank you for using my app."  />
 </LinearLayout>

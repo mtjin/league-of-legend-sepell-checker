@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".UsageDialogActivity"></activity>
+        <activity android:name=".UsageDialogActivity" />
         <activity android:name=".Usage2Activity" />
         <activity android:name=".UsageActivity" />
         <activity
