@@ -694,15 +694,13 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //화면 안꺼지게하기
 
         //음성인식 퍼미션
-        if (Build.VERSION.SDK_INT >= 23) {
-            // 퍼미션 체크
-            if (Build.VERSION.SDK_INT >= 26) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
-                        Manifest.permission.RECORD_AUDIO, Manifest.permission.VIBRATE}, PERMISSION);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
-                        Manifest.permission.RECORD_AUDIO}, PERMISSION);
-            }
+        // 퍼미션 체크
+        if (Build.VERSION.SDK_INT >= 26) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
+                    Manifest.permission.RECORD_AUDIO, Manifest.permission.VIBRATE}, PERMISSION);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
+                    Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
 
         //CloseAd 초기화
