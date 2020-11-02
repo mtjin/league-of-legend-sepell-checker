@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     private static final String APP_CODE = "FyiWuKSZ"; // 광고 요청을 위한 App Code CAULY
     CaulyCloseAd mCloseAd;
 
-    // Back Key가 눌러졌을 때, CloseAd 호출
+    // Back Key 가 눌러졌을 때, CloseAd 호출
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -257,29 +256,39 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     int spellTime52 = 300;
 
 
-
+    @SuppressLint("SetTextI18n")
     public void setSpellCoolTime(String spellName, int spellNum) {
 
         int time = 0;
         Log.d("FFFF", spellName);
-        if (spellName.equals("exhausted")) {
-            time = 210;
-        } else if (spellName.equals("flash")) {
-            time = 300;
-        } else if (spellName.equals("gangta")) {
-            time = 40;
-        } else if (spellName.equals("heal")) {
-            time = 240;
-        } else if (spellName.equals("jumhwa")) {
-            time = 180;
-        } else if (spellName.equals("junghwa")) {
-            time = 210;
-        } else if (spellName.equals("sheild")) {
-            time = 180;
-        } else if (spellName.equals("teleport")) {
-            time = 360;
-        } else if (spellName.equals("youchehwa")) {
-            time = 180;
+        switch (spellName) {
+            case "exhausted":
+                time = 210;
+                break;
+            case "flash":
+                time = 300;
+                break;
+            case "gangta":
+                time = 40;
+                break;
+            case "heal":
+                time = 240;
+                break;
+            case "jumhwa":
+                time = 180;
+                break;
+            case "junghwa":
+                time = 210;
+                break;
+            case "sheild":
+                time = 180;
+                break;
+            case "teleport":
+                time = 360;
+                break;
+            case "youchehwa":
+                time = 180;
+                break;
         }
 
         if (spellNum == 11) {
@@ -414,9 +423,6 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
     final static String TAG = "MainTAG";
 
-    //구글음성인식용(SST)
-    private Intent mIntent;
-    SpeechRecognizer mRecognizer;
     SpeechRecognition speechRecognition;
     //스레드개수
     ExecutorService threadPool = Executors.newFixedThreadPool(12);
@@ -452,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     //중복 클릭 방지 시간 설정 ( 해당 시간 이후에 다시 클릭 가능 )
     private static final long MIN_CLICK_INTERVAL = 600;
     private long mLastClickTime = 0;
+
     @Override
     public void OnSpeechRecognitionFinalResult(String s) {
         long currentClickTime = SystemClock.uptimeMillis();
@@ -527,11 +534,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
                         spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
                     } else {
                         spell22AsyncTask = new Spell22AsyncTask(); //스레드 재생성 (한번 사용한 Asynctask는 재활용이 불가능하나봄)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                            spell22AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell22TextView.getText().toString().trim()));
-                        } else {
-                            spell22AsyncTask.execute(Integer.valueOf(spell22TextView.getText().toString().trim()));
-                        }
+                        spell22AsyncTask.executeOnExecutor(threadPool, Integer.valueOf(spell22TextView.getText().toString().trim()));
                     }
                 } else {
 
@@ -716,7 +719,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         mCloseAd.disableBackKey();
 
         //음성인식
-        mIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        //구글음성인식용(SST)
+        Intent mIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         mIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
         mIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
         speechRecognition = new SpeechRecognition(this);
@@ -1164,6 +1168,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -2138,9 +2143,9 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
         @Override
         protected Integer doInBackground(Integer... value) {
-            originalTIme = value[0].intValue();
-            leftTime = value[0].intValue();
-            while (isCancelled() == false) { //종료되거나 stop안누른경우
+            originalTIme = value[0];
+            leftTime = value[0];
+            while (!isCancelled()) { //종료되거나 stop안누른경우
                 if (leftTime <= 0) {
                     break;
                 } else {
@@ -2156,13 +2161,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         }
 
         //중간중간 UI업데이트
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onProgressUpdate(Integer... values) {
             setSpellImage(request31, name31, false);
-            if (values[0].intValue() <= 30) {
+            if (values[0] <= 30) {
                 spell31TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell31TextView.setText(values[0].toString());
-                if (values[0].intValue() == 5) {
+                if (values[0] == 5) {
                     if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
@@ -2217,13 +2223,14 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         }
 
         //중간중간 UI업데이트
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onProgressUpdate(Integer... values) {
             setSpellImage(request32, name32, false);
-            if (values[0].intValue() <= 30) {
+            if (values[0] <= 30) {
                 spell32TextView.setTextColor(Color.parseColor("#FF1000"));
                 spell32TextView.setText(values[0].toString());
-                if (values[0].intValue() == 5) {
+                if (values[0] == 5) {
                     if (aSwitch.isChecked()) {
                         vibrator.vibrate(1000); // 1초간 진동
                     }
@@ -2237,6 +2244,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         }
 
         //작업종료 후 원래시간으로 세팅
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onPostExecute(Integer integer) {
             spell32TextView.setTextColor(Color.parseColor("#000000"));
@@ -2244,6 +2252,7 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
             setSpellImage(request32, name32, true);
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onCancelled() {
             spell32TextView.setTextColor(Color.parseColor("#000000"));
