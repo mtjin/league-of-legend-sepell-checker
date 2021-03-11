@@ -30,6 +30,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.InterstitialAd;
+import com.facebook.ads.InterstitialAdListener;
 import com.fsn.cauly.CaulyAdInfo;
 import com.fsn.cauly.CaulyAdInfoBuilder;
 import com.fsn.cauly.CaulyCloseAd;
@@ -52,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
     private boolean showInterstitial = false;
     private static final String APP_CODE = "FyiWuKSZ"; // 광고 요청을 위한 App Code CAULY
     CaulyCloseAd mCloseAd;
+    //페이스북광고
+    private InterstitialAd interstitialAd;
 
     // Back Key 가 눌러졌을 때, CloseAd 호출
     @Override
@@ -696,6 +702,60 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //화면 안꺼지게하기
 
+        // Instantiate an InterstitialAd object.
+        // NOTE: the placement ID will eventually identify this as your App, you can ignore it for
+        // now, while you are testing and replace it later when you have signed up.
+        // While you are using this temporary code you will only get test ads and if you release
+        // your code like this to the Google Play your users will not receive ads (you will get a no fill error).
+        //페이스북광고 초기화
+        interstitialAd = new InterstitialAd(this, "456994755501347_457007522166737");
+        // Create listeners for the Interstitial Ad
+        InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+            @Override
+            public void onInterstitialDisplayed(Ad ad) {
+                // Interstitial ad displayed callback
+                Log.e(TAG, "Interstitial ad displayed.");
+            }
+
+            @Override
+            public void onInterstitialDismissed(Ad ad) {
+                // Interstitial dismissed callback
+                Log.e(TAG, "Interstitial ad dismissed.");
+            }
+
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                // Ad error callback
+                Log.e(TAG, "Interstitial ad failed to load: " + adError.getErrorMessage());
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                // Interstitial ad is loaded and ready to be displayed
+                Log.d(TAG, "Interstitial ad is loaded and ready to be displayed!");
+                // Show the ad
+                interstitialAd.show();
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+                // Ad clicked callback
+                Log.d(TAG, "Interstitial ad clicked!");
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+                // Ad impression logged callback
+                Log.d(TAG, "Interstitial ad impression logged!");
+            }
+        };
+
+        // For auto play video ads, it's recommended to load the ad
+        // at least 30 seconds before it is shown
+        interstitialAd.loadAd(
+                interstitialAd.buildLoadAdConfig()
+                        .withAdListener(interstitialAdListener)
+                        .build());
         //음성인식 퍼미션
         if (Build.VERSION.SDK_INT >= 23) {
             // 퍼미션 체크
@@ -2509,6 +2569,9 @@ public class MainActivity extends AppCompatActivity implements OnSpeechRecogniti
 
     @Override
     protected void onDestroy() {
+        if (interstitialAd != null) {
+            interstitialAd.destroy();
+        }
         super.onDestroy();
         // TTS 객체가 남아있다면 실행을 중지하고 메모리에서 제거한다.
         if (tts != null) {
