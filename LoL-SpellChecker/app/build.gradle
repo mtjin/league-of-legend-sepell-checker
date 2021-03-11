@@ -37,4 +37,7 @@ dependencies {
     implementation 'com.github.maxwellobi:android-speech-recognition:v1.0.0-beta.1'
 
     implementation files('libs/CaulySDK-3.4.24.jar')
+
+    //페이스북 광고
+    implementation 'com.facebook.android:audience-network-sdk:6.3.0'
 }
