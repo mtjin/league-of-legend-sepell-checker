@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.mtjin.lol_spellchecker">
     <!-- 진동 -->
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 인터넷 -->
@@ -15,7 +16,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:targetApi="m">
         <activity android:name=".UsageDialogActivity" />
         <activity android:name=".Usage2Activity" />
         <activity android:name=".UsageActivity" />
